@@ -140,7 +140,7 @@ struct apple80211req
 #define APPLE80211_IOC_PHY_SUB_MODE                65    // req_type
 #define APPLE80211_IOC_MCS_INDEX_SET            66    // req_type
 #define APPLE80211_IOC_CACHE_THRESH_BCAST        67    // req_type
-#define    APPLE80211_IOC_CACHE_THRESH_DIRECT        68    // req_type
+#define APPLE80211_IOC_CACHE_THRESH_DIRECT        68    // req_type
 #define APPLE80211_IOC_WOW_PARAMETERS            69    // req_type
 #define APPLE80211_IOC_WOW_ENABLED                70    // req_type
 #define APPLE80211_IOC_40MHZ_INTOLERANT            71    // req_type
@@ -515,6 +515,24 @@ struct apple80211_scan_data
     u_int32_t                    num_channels;                        // 0 if not passing in channels
     struct apple80211_channel    channels[APPLE80211_MAX_CHANNELS];    // channel list
 };
+
+struct apple80211_scan_multiple_data
+{
+  uint32_t version;
+  uint32_t ap_mode; // apple80211_apmode
+  uint32_t ssid_count;
+  apple80211_ssid_data ssids[16];
+  uint32_t bssid_count;
+  ether_addr bssids[16];
+  uint32_t scan_type;
+  uint32_t phy_mode;
+  uint32_t dwell_time;
+  uint32_t rest_time;
+  uint32_t num_channels;
+  struct apple80211_channel channels[128];
+  uint16_t unk_2;
+};
+
 
 struct apple80211_apmode_data
 {

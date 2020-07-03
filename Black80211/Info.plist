@@ -31,9 +31,7 @@
 			<key>IOClass</key>
 			<string>Black80211Control</string>
 			<key>IOProviderClass</key>
-			<string>IOPCIDevice</string>
-			<key>IOPCIPrimaryMatch</key>
-			<string>0x00008086&amp;0x00009d1a</string>
+			<string>IOResources</string>
 		</dict>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
@@ -42,6 +40,8 @@
 	<dict>
 		<key>com.apple.iokit.IO80211Family</key>
 		<string>1200.12.2b1</string>
+		<key>com.zxystd.itlwm</key>
+		<string>1.0</string>
 		<key>com.apple.iokit.IONetworkingFamily</key>
 		<string>3.2</string>
 		<key>com.apple.iokit.IOPCIFamily</key>

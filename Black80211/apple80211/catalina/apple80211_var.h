@@ -85,6 +85,7 @@ enum apple80211_apmode    {
     APPLE80211_AP_MODE_ANY       = 3,        // Any supported mode
 };
 
+// states are the same as in itlwm
 enum apple80211_state {
     APPLE80211_S_INIT    = 0,            // default state
     APPLE80211_S_SCAN    = 1,            // scanning
@@ -139,6 +140,9 @@ enum apple80211_authtype_upper
     APPLE80211_AUTHTYPE_LEAP        = 5,    //    LEAP
     APPLE80211_AUTHTYPE_8021X        = 6,    //    802.1x
     APPLE80211_AUTHTYPE_WPS            = 7,    //    WiFi Protected Setup
+	APPLE80211_AUTHTYPE_SHA256_PSK = 8,
+	APPLE80211_AUTHTYPE_SHA256_8021X = 9,
+	APPLE80211_AUTHTYPE_WPA3_SAE = 10
 };
 
 // Unify association status code and deauth reason codes into a single enum describing
@@ -195,6 +199,7 @@ enum apple80211_locale
     APPLE80211_LOCALE_KOREA        = 4,
     APPLE80211_LOCALE_APAC        = 5,
     APPLE80211_LOCALE_ROW        = 6,
+	APPLE80211_LOCALE_INDONESIA = 7
 };
 
 enum apple80211_scan_type
@@ -426,30 +431,33 @@ struct apple80211_rate
 struct apple80211_scan_result
 {
     u_int32_t                    version; // 0x00 - 0x03
-    struct apple80211_channel    asr_channel; // 0x04 - 0x0f
+    apple80211_channel    asr_channel; // 0x04 - 0x0f
 
     int16_t asr_unk; // 0x10 - 0x11
-    
+
     int16_t                        asr_noise; // 0x12 - 0x13
     int16_t asr_snr; // 0x14 - 0x15
     int16_t                        asr_rssi; // 0x16 - 0x17
-    u_int16_t                    asr_beacon_int; // 0x18 - 0x19
-    
-    u_int16_t                    asr_cap;        // capabilities // 0x1a 0x1b
-    
+    int16_t                    asr_beacon_int; // 0x18 - 0x19
+
+    int16_t                    asr_cap;        // capabilities // 0x1a 0x1b
+
     u_int8_t                    asr_bssid[ APPLE80211_ADDR_LEN ]; // 0x1c 0x1d 0x1e 0x1f 0x20 0x21
     u_int8_t                    asr_nrates; // 0x22
     u_int8_t                    asr_nr_unk; // 0x23
     u_int32_t                    asr_rates[ APPLE80211_MAX_RATES ]; // 0x24 - 0x5f
     u_int8_t                    asr_ssid_len; // 0x60
     u_int8_t                    asr_ssid[ APPLE80211_MAX_SSID_LEN ]; // 0x61 - 0x80
-    u_int16_t unk;
+    __attribute__((packed)) __attribute__((aligned(1))) int16_t unk;
     uint8_t unk2;
     u_int32_t                    asr_age;    // (ms) non-zero for cached scan result // 0x84
-    
-    u_int16_t                    asr_ie_len;
-    void                       *asr_ie_data;
+
+    u_int16_t  unk3;
+    int16_t                    asr_ie_len;
+    uint32_t                   asr_unk3;
+    void*                       asr_ie_data;
 };
+
 
 struct apple80211_network_data
 {
@@ -520,7 +528,7 @@ enum apple80211_card_capability
     APPLE80211_CAP_WOW                = 20,    // CAPABILITY: Wake on wireless
     APPLE80211_CAP_TSN                = 21,    // CAPABILITY: WPA with WEP group key
 };
-#define APPLE80211_CAP_MAX    21
+#define APPLE80211_CAP_MAX    63
 
 enum apple80211_assoc_flags {
     APPLE80211_ASSOC_F_CLOSED    = 1,    // flag: scan was directed, needed to remember closed networks

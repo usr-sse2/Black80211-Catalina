@@ -13,45 +13,56 @@ OSDefineMetaClassAndStructors(Black80211Control, IO80211Controller);
 #define super IO80211Controller
 
 bool Black80211Control::init(OSDictionary* parameters) {
-    IOLog("Black80211: Init");
+    IOLog("Black80211: Init\n");
     
     if (!super::init(parameters)) {
-        IOLog("Black80211: Failed to call IO80211Controller::init!");
+        IOLog("Black80211: Failed to call IO80211Controller::init!\n");
         return false;
     }
-    
-    dev = new FakeDevice();
+	scan_result = nullptr;
+	prevResult = nullptr;
+
+	requestedScanning = false;
+	powerState = APPLE80211_POWER_ON;
+	networkIndex = 0;
+	current_rsn_ie_length = 0;
+	memset(current_rsn_ie, 0, APPLE80211_MAX_RSN_IE_LEN);
+
+	authtype_upper = 0;
+	authtype_lower = 0;
+	memset(&cipher_key, 0, sizeof(apple80211_key));
+
     return true;
 }
 
 void Black80211Control::free() {
-    IOLog("Black80211: Free");
+    IOLog("Black80211: Free\n");
     
     ReleaseAll();
     super::free();
 }
 
 IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
-    IOLog("Black80211: probing");
-    
-    super::probe(provider, score);
-    
-    fPciDevice = OSDynamicCast(IOPCIDevice, provider);
-    if (!fPciDevice) {
-        IOLog("Black80211: Provider is not PCI device");
-        fPciDevice = NULL;
-        return NULL;
-    }
-    UInt16 fDeviceId = fPciDevice->configRead16(kIOPCIConfigDeviceID);
-    UInt16 fSubsystemId = fPciDevice->configRead16(kIOPCIConfigSubSystemID);
-    
-    if(fDeviceId != 0x24FD) {
-        IOLog("Black80211: not a 8265 device");
-        fPciDevice = NULL;
-        return NULL;
-    }
-    
-    fPciDevice->retain();
+    IOLog("Black80211: probing\n");
+
+    if (!super::probe(provider, score))
+		return NULL;
+
+	OSDictionary *matchingDict = IOService::nameMatching("itlwm");
+	if (!matchingDict) {
+		IOLog("Black80211: failed to create matching dict\n");
+		return NULL;
+	}
+
+	fItlWm = OSDynamicCast(IONetworkController, provider->waitForMatchingService(matchingDict));
+	if (!fItlWm) {
+		IOLog("Black80211: failed to find itlwm\n");
+		OSSafeReleaseNULL(matchingDict);
+		return NULL;
+	}
+
+	OSSafeReleaseNULL(matchingDict);
+	fItlWm->retain();
     
     return this;
 }
@@ -69,29 +80,29 @@ IOWorkLoop* Black80211Control::getWorkLoop() const {
 }
 
 bool Black80211Control::start(IOService* provider) {
-    IOLog("Black80211: Start");
+    IOLog("Black80211: Start\n");
     if (!super::start(provider)) {
-        IOLog("Black80211: Failed to call IO80211Controller::start!");
+        IOLog("Black80211: Failed to call IO80211Controller::start!\n");
         ReleaseAll();
         return false;
     }
-    
+
     //fWorkloop = (IO80211WorkLoop *)getWorkLoop();
     if (!fWorkloop) {
-        IOLog("Black80211: Failed to get workloop!");
+        IOLog("Black80211: Failed to get workloop!\n");
         ReleaseAll();
         return false;
     }
     
     fCommandGate = IOCommandGate::commandGate(this);
     if (!fCommandGate) {
-        IOLog("Black80211: Failed to create command gate!");
+        IOLog("Black80211: Failed to create command gate!\n");
         ReleaseAll();
         return false;
     }
     
     if (fWorkloop->addEventSource(fCommandGate) != kIOReturnSuccess) {
-        IOLog("Black80211: Failed to register command gate event source!");
+        IOLog("Black80211: Failed to register command gate event source!\n");
         ReleaseAll();
         return false;
     }
@@ -109,18 +120,18 @@ bool Black80211Control::start(IOService* provider) {
     //addMediumType(kIOMediumIEEE80211OptionAdhoc, 0, MEDIUM_TYPE_ADHOC,"ADHOC");
     
     if (!publishMediumDictionary(mediumDict)) {
-        IOLog("Black80211: Failed to publish medium dictionary!");
+        IOLog("Black80211: Failed to publish medium dictionary!\n");
         ReleaseAll();
         return false;
     }
     
     if (!setCurrentMedium(mediumTable[MEDIUM_TYPE_AUTO])) {
-        IOLog("Black80211: Failed to set current medium!");
+        IOLog("Black80211: Failed to set current medium!\n");
         ReleaseAll();
         return false;
     }
     if (!setSelectedMedium(mediumTable[MEDIUM_TYPE_AUTO])) {
-        IOLog("Black80211: Failed to set selected medium!");
+        IOLog("Black80211: Failed to set selected medium!\n");
         ReleaseAll();
         return false;
     }
@@ -133,7 +144,7 @@ bool Black80211Control::start(IOService* provider) {
     }
      */
     if (!attachInterface((IONetworkInterface**) &fInterface, true)) {
-        kprintf("Black80211: Failed to attach interface!");
+        IOLog("Black80211: Failed to attach interface!\n");
         ReleaseAll();
         return false;
     }
@@ -147,7 +158,7 @@ bool Black80211Control::start(IOService* provider) {
 }
 
 IOReturn Black80211Control::enable(IONetworkInterface* iface) {
-    kprintf("Black80211: enable");
+    IOLog("Black80211: enable");
     IOMediumType mediumType = kIOMediumIEEE80211Auto;
     IONetworkMedium *medium = IONetworkMedium::getMediumWithType(mediumDict, mediumType);
     setLinkStatus(kIONetworkLinkActive | kIONetworkLinkValid, medium);
@@ -160,7 +171,7 @@ IOReturn Black80211Control::enable(IONetworkInterface* iface) {
 }
 
 IOReturn Black80211Control::disable(IONetworkInterface* iface) {
-    kprintf("Black80211: disable");
+    IOLog("Black80211: disable");
     return kIOReturnSuccess;
 }
 
@@ -180,18 +191,19 @@ bool Black80211Control::addMediumType(UInt32 type, UInt32 speed, UInt32 code, ch
 
 void Black80211Control::stop(IOService* provider) {
     if (fCommandGate) {
-        IOLog("Black80211::stop: Command gate alive. Disabling it.");
+        IOLog("Black80211::stop: Command gate alive. Disabling it.\n");
         fCommandGate->disable();
-        IOLog("Black80211::stop: Done disabling command gate");
+        IOLog("Black80211::stop: Done disabling command gate\n");
         if (fWorkloop) {
-            IOLog("Black80211::stop: Workloop alive. Removing command gate");
+            IOLog("Black80211::stop: Workloop alive. Removing command gate\n");
             fWorkloop->removeEventSource(fCommandGate);
         }
     }
     
     if (fInterface) {
-        IOLog("Black80211::stop: Detaching interface");
+        IOLog("Black80211::stop: Detaching interface\n");
         detachInterface(fInterface, true);
+		OSSafeReleaseNULL(fInterface);
         fInterface = NULL;
     }
     
@@ -218,8 +230,8 @@ SInt32 Black80211Control::apple80211Request(unsigned int request_type,
                                             IO80211Interface* interface,
                                             void* data) {
     if (request_type != SIOCGA80211 && request_type != SIOCSA80211) {
-        IOLog("Black80211: Invalid IOCTL request type: %u", request_type);
-        IOLog("Expected either %lu or %lu", SIOCGA80211, SIOCSA80211);
+        IOLog("Black80211: Invalid IOCTL request type: %u\n", request_type);
+        IOLog("Expected either %lu or %lu\n", SIOCGA80211, SIOCSA80211);
         return kIOReturnError;
     }
 
@@ -243,7 +255,7 @@ if (REQ_TYPE == SIOCSA80211) { \
     ret = set##REQ(interface, (struct DATA_TYPE* )data); \
 }
     
-    kprintf("Black80211: IOCTL %s(%d) %s",
+    IOLog("Black80211: IOCTL %s(%d) %s\n",
           isGet ? "get" : "set",
           request_number,
           IOCTL_NAMES[request_number]);
@@ -253,8 +265,11 @@ if (REQ_TYPE == SIOCSA80211) { \
             IOCTL(request_type, SSID, apple80211_ssid_data);
             break;
         case APPLE80211_IOC_AUTH_TYPE: // 2
-            IOCTL_GET(request_type, AUTH_TYPE, apple80211_authtype_data);
+            IOCTL(request_type, AUTH_TYPE, apple80211_authtype_data);
             break;
+		case APPLE80211_IOC_CIPHER_KEY:
+			IOCTL(request_type, CIPHER_KEY, apple80211_key);
+			break;
         case APPLE80211_IOC_CHANNEL: // 4
             IOCTL_GET(request_type, CHANNEL, apple80211_channel_data);
             break;
@@ -270,6 +285,9 @@ if (REQ_TYPE == SIOCSA80211) { \
         case APPLE80211_IOC_SCAN_REQ: // 10
             IOCTL_SET(request_type, SCAN_REQ, apple80211_scan_data);
             break;
+		case APPLE80211_IOC_SCAN_REQ_MULTIPLE:
+			IOCTL_SET(request_type, SCAN_REQ_MULTIPLE, apple80211_scan_multiple_data);
+			break;
         case APPLE80211_IOC_SCAN_RESULT: // 11
             IOCTL_GET(request_type, SCAN_RESULT, apple80211_scan_result*);
             break;
@@ -300,9 +318,19 @@ if (REQ_TYPE == SIOCSA80211) { \
         case APPLE80211_IOC_ASSOCIATE: // 20
             IOCTL_SET(request_type, ASSOCIATE, apple80211_assoc_data);
             break;
+		case APPLE80211_IOC_ASSOCIATE_RESULT: // 21
+			IOCTL_GET(request_type, ASSOCIATE_RESULT, apple80211_assoc_result_data);
+			break;
+		case APPLE80211_IOC_DISASSOCIATE: // 22
+			if (request_type == SIOCSA80211)
+				ret = setDISASSOCIATE(interface);
+			break;
         case APPLE80211_IOC_SUPPORTED_CHANNELS: // 27
             IOCTL_GET(request_type, SUPPORTED_CHANNELS, apple80211_sup_channel_data);
             break;
+		case APPLE80211_IOC_DEAUTH: // 29
+			IOCTL_GET(request_type, DEAUTH, apple80211_deauth_data);
+			break;
         case APPLE80211_IOC_LOCALE: // 28
             IOCTL_GET(request_type, LOCALE, apple80211_locale_data);
             break;
@@ -318,6 +346,12 @@ if (REQ_TYPE == SIOCSA80211) { \
         case APPLE80211_IOC_HARDWARE_VERSION: // 44
             IOCTL_GET(request_type, HARDWARE_VERSION, apple80211_version_data);
             break;
+		case APPLE80211_IOC_RSN_IE: // 46
+			IOCTL(request_type, RSN_IE, apple80211_rsn_ie_data);
+			break;
+		case APPLE80211_IOC_ASSOCIATION_STATUS: // 50
+			IOCTL_GET(request_type, ASSOCIATION_STATUS, apple80211_assoc_status_data);
+			break;
         case APPLE80211_IOC_COUNTRY_CODE: // 51
             IOCTL_GET(request_type, COUNTRY_CODE, apple80211_country_code_data);
             break;
@@ -329,15 +363,19 @@ if (REQ_TYPE == SIOCSA80211) { \
             break;
         case APPLE80211_IOC_WOW_PARAMETERS: // 69
             break;
-        case APPLE80211_IOC_ROAM_THRESH:
+        case APPLE80211_IOC_ROAM_THRESH:// 80
             IOCTL_GET(request_type, ROAM_THRESH, apple80211_roam_threshold_data);
             break;
+		case APPLE80211_IOC_SCANCACHE_CLEAR: // 90
+			if (request_type == SIOCSA80211)
+				ret = setSCANCACHE_CLEAR(interface);
+			break;
         case APPLE80211_IOC_TX_CHAIN_POWER: // 108
             break;
         case APPLE80211_IOC_THERMAL_THROTTLING: // 111
             break;
         default:
-            kprintf("Black80211: unhandled ioctl %s %d", IOCTL_NAMES[request_number], request_number);
+            IOLog("Black80211: unhandled ioctl %s %d\n", request_number >= 267 ? "" : IOCTL_NAMES[request_number], request_number);
             break;
     }
 #undef IOCTL
@@ -346,7 +384,7 @@ if (REQ_TYPE == SIOCSA80211) { \
 }
 
 bool Black80211Control::configureInterface(IONetworkInterface *netif) {
-    kprintf("Black80211: Configure interface");
+    IOLog("Black80211: Configure interface\n");
     if (!super::configureInterface(netif)) {
         return false;
     }

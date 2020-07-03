@@ -152,7 +152,7 @@ public:
     virtual SInt32 apple80211_ioctl(IO80211SkywalkInterface *,ulong,void *);
     
     virtual SInt32 apple80211_ioctl(IO80211Interface *, ifnet_t,ulong id,void *) {
-        IOLog("Black80211: ioctl called with %x", id);
+		IOLog("Black80211: ioctl called with %lx", id);
         return 0;
     }
     
@@ -274,7 +274,10 @@ public:
     //modified
     
     
-    SInt32 getASSOCIATE_RESULT(IO80211Interface *,IO80211VirtualInterface *,IO80211SkywalkInterface *,apple80211_assoc_result_data *) {
+    SInt32 getASSOCIATE_RESULT(IO80211Interface *,IO80211VirtualInterface *,IO80211SkywalkInterface *,apple80211_assoc_result_data * assoc_result) {
+		IOLog("o_O this is called");
+		assoc_result->version = APPLE80211_VERSION;
+		assoc_result->result = APPLE80211_RESULT_SUCCESS;
         return kIOReturnSuccess;
     }
     virtual int errnoFromReturn(int) override;
@@ -472,7 +475,7 @@ protected:
     UInt32 _infra_channel;  // 0x1dc compared with offet 8 of apple80211_stat_report  IO80211Controller::setChanCCA(apple80211_stat_report*, int)
     UInt32 _infra_channel_flags;  // 0x1e0 compared with offet 8 of apple80211_channel
     UInt32 _current_channel;   // 0x1e8 loaded with offet 04 of apple80211_channel
-    UInt32 _current_channel_fags;   // 0x1ec loaded with offet 08 of apple80211_channel
+    UInt32 _current_channel_flags;   // 0x1ec loaded with offet 08 of apple80211_channel
     UInt8 _awdl_sync[0x190]; // 0x1f0, 0x190 bytes apple80211_awdl_sync_channel_sequence
     IONotifier * _powerDownNotifier;          // 0x380
     IOService  * _provider;            // 0x388
