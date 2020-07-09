@@ -30,7 +30,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		3589F62B249CEBDB0068BE0F /* ieee80211_ioctl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ieee80211_ioctl.h; sourceTree = "<group>"; };
 		6811BAD623E36DB00004FF34 /* IONetworkController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IONetworkController.h; sourceTree = "<group>"; };
 		6811BAD723E36DB00004FF34 /* IOSkywalkEthernetInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSkywalkEthernetInterface.h; sourceTree = "<group>"; };
 		6811BAD823E36DB00004FF34 /* IO80211Interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IO80211Interface.h; sourceTree = "<group>"; };
@@ -124,7 +123,6 @@
 				A61272292039FD13009DD95B /* Info.plist */,
 				A635043B209A3CC700C82B59 /* apple80211.h */,
 				A688015320EDA58B00590651 /* debug.h */,
-				3589F62B249CEBDB0068BE0F /* ieee80211_ioctl.h */,
 			);
 			path = Black80211;
 			sourceTree = "<group>";

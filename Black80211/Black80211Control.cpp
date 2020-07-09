@@ -148,6 +148,8 @@ bool Black80211Control::start(IOService* provider) {
         ReleaseAll();
         return false;
     }
+
+	((uint8_t*)fInterface)[0x160] &= ~2; // disable use of Apple RSN supplicant
         
     
     fInterface->registerService();
@@ -226,15 +228,23 @@ IOReturn Black80211Control::getHardwareAddressForInterface(IO80211Interface* net
 }
 
 SInt32 Black80211Control::apple80211Request(unsigned int request_type,
-                                            int request_number,
-                                            IO80211Interface* interface,
-                                            void* data) {
+											int request_number,
+											IO80211Interface* interface,
+											void* data) {
     if (request_type != SIOCGA80211 && request_type != SIOCSA80211) {
         IOLog("Black80211: Invalid IOCTL request type: %u\n", request_type);
         IOLog("Expected either %lu or %lu\n", SIOCGA80211, SIOCSA80211);
         return kIOReturnError;
     }
+	return fCommandGate->runActionBlock(^IOReturn{
+		return apple80211RequestGated(request_type, request_number, interface, data);
+	});
+}
 
+SInt32 Black80211Control::apple80211RequestGated(unsigned int request_type,
+                                            int request_number,
+                                            IO80211Interface* interface,
+                                            void* data) {
     IOReturn ret = 0;
     
     bool isGet = (request_type == SIOCGA80211);
@@ -374,6 +384,9 @@ if (REQ_TYPE == SIOCSA80211) { \
             break;
         case APPLE80211_IOC_THERMAL_THROTTLING: // 111
             break;
+		case APPLE80211_IOC_LINK_CHANGED_EVENT_DATA: // 156
+			IOCTL_GET(request_type, LINK_CHANGED_EVENT_DATA, apple80211_link_changed_event_data);
+			break;
         default:
             IOLog("Black80211: unhandled ioctl %s %d\n", request_number >= 267 ? "" : IOCTL_NAMES[request_number], request_number);
             break;

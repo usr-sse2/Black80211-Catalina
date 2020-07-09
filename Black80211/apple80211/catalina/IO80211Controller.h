@@ -472,10 +472,10 @@ protected:
     
     UInt64 _vlog_debug ;                  // 0x1d0 vlogDebug ?
     UInt32 _unknown;                    // 0x1d8
-    UInt32 _infra_channel;  // 0x1dc compared with offet 8 of apple80211_stat_report  IO80211Controller::setChanCCA(apple80211_stat_report*, int)
-    UInt32 _infra_channel_flags;  // 0x1e0 compared with offet 8 of apple80211_channel
-    UInt32 _current_channel;   // 0x1e8 loaded with offet 04 of apple80211_channel
-    UInt32 _current_channel_flags;   // 0x1ec loaded with offet 08 of apple80211_channel
+    UInt32 _infra_channel;  // 0x1dc compared with offset 8 of apple80211_stat_report  IO80211Controller::setChanCCA(apple80211_stat_report*, int)
+    UInt32 _infra_channel_flags;  // 0x1e0 compared with offset 8 of apple80211_channel
+    UInt32 _current_channel;   // 0x1e8 loaded with offset 04 of apple80211_channel
+    UInt32 _current_channel_flags;   // 0x1ec loaded with offset 08 of apple80211_channel
     UInt8 _awdl_sync[0x190]; // 0x1f0, 0x190 bytes apple80211_awdl_sync_channel_sequence
     IONotifier * _powerDownNotifier;          // 0x380
     IOService  * _provider;            // 0x388
@@ -489,6 +489,22 @@ protected:
     uint8_t filler[0x2B2];
     //0x3CA
 };
+
+// 0x215: 1 byte, length of channel sequence, should be 16
+// 0x21c: channel sequence, should contain 16 elements of length 12, possibly apple80211_channel (but why 16?)
+// struct of three ints, last looks like flags, first unused
+
+/*
+ void __thiscall
+setChannelSequenceList(IO80211Controller *this,apple80211_awdl_sync_channel_sequence *param_1)
+
+{
+  _memcpy(this + 0x210,param_1,400);
+  calculateInterfacesAvaiability(this);
+  return;
+}
+*/
+
 
 #endif /* defined(KERNEL) && defined(__cplusplus) */
 

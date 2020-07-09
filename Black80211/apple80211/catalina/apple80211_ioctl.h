@@ -533,6 +533,16 @@ struct apple80211_scan_multiple_data
   uint16_t unk_2;
 };
 
+struct apple80211_link_changed_event_data
+{
+	bool isLinkDown; // 0
+	uint32_t rssi; // 4
+	uint16_t snr; // 8
+	uint16_t nf; // 10
+	char cca; // 12
+	bool voluntary; // 16
+	uint32_t reason; // 20
+};
 
 struct apple80211_apmode_data
 {

@@ -74,8 +74,6 @@ struct interop_scan_result {
 };
 
 
-#define RELEASE(x) if(x){(x)->release();(x)=NULL;}
-
 class Black80211Control : public IO80211Controller {
     
     OSDeclareDefaultStructors(Black80211Control)
@@ -88,6 +86,7 @@ public:
     IOService* probe(IOService* provider, SInt32* score) override;
     
     SInt32 apple80211Request(unsigned int request_type, int request_number, IO80211Interface* interface, void* data) override;
+    SInt32 apple80211RequestGated(unsigned int request_type, int request_number, IO80211Interface* interface, void* data);
     UInt32 outputPacket (mbuf_t m, void* param) override;
     IOReturn getMaxPacketSize(UInt32* maxSize) const;
     const OSString* newVendorString() const;
@@ -184,15 +183,17 @@ private:
     IOReturn getRADIO_INFO(IO80211Interface* interface, struct apple80211_radio_info_data* md);
 	// 90 - SCANCACHE_CLEAR
 	IOReturn setSCANCACHE_CLEAR(IO80211Interface* interface);
+	// 156 - LINK_CHANGED_EVENT_DATA
+	IOReturn getLINK_CHANGED_EVENT_DATA(IO80211Interface* interface, struct apple80211_link_changed_event_data* ed);
     
     
     inline void ReleaseAll() {
-        RELEASE(fOutputQueue);
-        RELEASE(fCommandGate);
-        RELEASE(fWorkloop);
-        RELEASE(mediumDict);
-        RELEASE(fWorkloop);
-		RELEASE(fItlWm);
+        OSSafeReleaseNULL(fOutputQueue);
+        OSSafeReleaseNULL(fCommandGate);
+        OSSafeReleaseNULL(fWorkloop);
+        OSSafeReleaseNULL(mediumDict);
+        OSSafeReleaseNULL(fWorkloop);
+		OSSafeReleaseNULL(fItlWm);
     }
     
     bool addMediumType(UInt32 type, UInt32 speed, UInt32 code, char* name = 0);

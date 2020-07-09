@@ -175,6 +175,14 @@ enum apple80211_associate_result
     APPLE80211_RESULT_UNKNOWN                    = 0xffff // Unrecognized error condition
 };
 
+enum apple80211_link_down_reason
+{
+	APPLE80211_LINK_DOWN_REASON_INTERNAL_ERROR = 0,
+	APPLE80211_LINK_DOWN_REASON_BEACONLOST = 1,
+	APPLE80211_LINK_DOWN_REASON_DEAUTH = 2,
+	APPLE80211_LINK_DOWN_REASON_INTERNAL_ERROR_2 = 3
+};
+
 enum apple80211_unit
 {
     APPLE80211_UNIT_DBM        = 0,        // dBm
@@ -232,6 +240,8 @@ enum apple80211_channel_flag
     // If this flag is not set, then the
     // extension channel is below.
 };
+
+// 0xc07 = APPLE80211_C_FLAG_10MHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_40MHZ | 0x400 | 0x800
 
 enum apple80211_rate_flag
 {
