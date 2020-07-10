@@ -11,6 +11,8 @@ The following actions already work:
 
 Open networks and other encryption types are not tested. Loading on boot is not tested (I load it manually using kextutil).
 
+itlwm should be used from https://github.com/usr-sse2/itlwm
+
 How to load:
 put Black80211.kext and itlwm.kext in the same folder
 ```bash
