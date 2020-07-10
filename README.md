@@ -1,18 +1,20 @@
-# Black80211-Catalina
+This project joins https://github.com/AppleIntelWifi/Black80211-Catalina and https://github.com/OpenIntelWireless/itlwm to provide a wireless driver for Intel adapters that can be controlled using native AirPort menu item. It works in such way:
 
-This project aims to be used like a simulator of IEEE80211 stack for MacOS. (only for Catalina)
+- There are two network interfaces: Ethernet from itlwm and Wi-Fi from Black80211.
+- Ethernet interface is used for actual data transfer, it has the real MAC and IP addresses.
+- Wi-Fi interface is used only for control, it should be manually set to a link-local IP address and made the lowest priority (order) in Network Preferences.
 
-The intent for this project is to provide a clean base that you can manipulate the 802.11 stack through,
-and to eventually write drivers for.
+The following actions already work:
+- Turning Wi-Fi off and on
+- Scanning networks (currently is poor due to frequent error 16 or timeouts)
+- Connecting to WPA2 Personal networks using entered password
 
-## READ ME FIRST
+Open networks and other encryption types are not tested. Loading on boot is not tested (I load it manually using kextutil).
 
-**THIS ISN'T A WIRELESS DRIVER**
-**I WILL NOT PROVIDE SUPPORT.**
-**PLEASE DO NOT EMAIL ME OR MAKE ISSUES REGARDING IT NOT WORKING.**
-***I WILL SLAP YOU.***
-
-## Known issues
-
-- Unable to unload kext (something is retaining the driver)
-- IO80211Interface needs to be populated with the actual variables, and not a massive uint8 array
+How to load:
+put Black80211.kext and itlwm.kext in the same folder
+```bash
+sudo chown -R root:wheel *.kext
+sudo chmod -R 755 *.kext
+kextutil Black80211.kext -r .
+```
