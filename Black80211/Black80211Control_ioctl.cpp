@@ -579,15 +579,17 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 	for ( ; networkIndex < scan_result->count; networkIndex++) {
 		interop_scan_result_network *network = &scan_result->networks[networkIndex];
 
+		/*
 		if (network->ni_rssi < 25) // disable weak networks
 			continue;
 
 		if (network->ni_essid[0] == 0) // disable hidden networks
 			continue;
+		 */
 
 		bool requested = true;
 #ifdef CHANNELS
-		/*
+		// itlwm reports current network even when its channel is not requested
 		if (requestIsMulti && multiRequest.num_channels > 0) {
 			requested = false;
 			for (int i = 0; i < multiRequest.num_channels; i++)
@@ -606,7 +608,7 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 		}
 
 		if (!requested)
-			continue;*/
+			continue;
 #endif
 
 		if (requestIsMulti && multiRequest.ssid_count > 0) {
@@ -902,8 +904,6 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
     IOLog("Black80211::setAssociate %s\n", ad->ad_ssid);
 
 	setDISASSOCIATE(interface);
-	fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkDown, 0);
-
 
 	apple80211_authtype_data authtype_data;
 	authtype_data.version = APPLE80211_VERSION;
@@ -920,7 +920,7 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 	setCIPHER_KEY(interface, &ad->ad_key);
 
 	itlwm_associate(fItlWm, ad->ad_ssid, ad->ad_key.key, ad->ad_key.key_len);
-	IOSleep(4000);
+	IOSleep(5000);
     fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkUp, 0);
 
 
@@ -956,7 +956,8 @@ IOReturn Black80211Control::getASSOCIATE_RESULT(IO80211Interface *interface, str
 IOReturn Black80211Control::setDISASSOCIATE(IO80211Interface *interface) {
     IOLog("Black80211::disassociate\n");
 	requestedScanning = false;
-	//itlwm_disassociate(fItlWm);
+	itlwm_disassociate(fItlWm);
+	fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkDown, 0);
 	return kIOReturnSuccess;
 }
 
