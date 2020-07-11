@@ -317,6 +317,18 @@ IOReturn Black80211Control::getCHANNEL(IO80211Interface *interface,
 }
 
 //
+// MARK: 6 - PROTMODE
+//
+
+IOReturn Black80211Control::getPROTMODE(IO80211Interface *interface, struct apple80211_protmode_data *pd) {
+	pd->version = APPLE80211_VERSION;
+	pd->protmode = APPLE80211_PROTMODE_AUTO;
+	pd->threshold = 0;
+	return kIOReturnSuccess;
+}
+
+
+//
 // MARK: 7 - TXPOWER
 //
 
@@ -939,17 +951,6 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 }
 
 //
-// MARK: 21 - ASSOCIATE_RESULT (likely unused)
-//
-
-IOReturn Black80211Control::getASSOCIATE_RESULT(IO80211Interface *interface, struct apple80211_assoc_result_data *ard) {
-	IOLog("Our ASSOCIATE_RESULT called");
-	ard->version = APPLE80211_VERSION;
-	ard->result = APPLE80211_RESULT_SUCCESS;
-	return kIOReturnSuccess;
-}
-
-//
 // MARK: 22 - DISASSOCIATE
 //
 
@@ -992,11 +993,14 @@ IOReturn Black80211Control::getLOCALE(IO80211Interface *interface,
 
 IOReturn Black80211Control::getDEAUTH(IO80211Interface *interface, struct apple80211_deauth_data *dd) {
 	dd->version = APPLE80211_VERSION;
-	if (itlwm_get_state(fItlWm) == APPLE80211_S_RUN)
-		dd->deauth_reason = APPLE80211_RESULT_SUCCESS;
-	else
-		dd->deauth_reason = APPLE80211_RESULT_UNAVAILABLE;
+	int state = itlwm_get_state(fItlWm);
+	//if (state == APPLE80211_S_RUN)
+	//	dd->deauth_reason = APPLE80211_RESULT_SUCCESS;
+	//else
+	//	dd->deauth_reason = APPLE80211_RESULT_UNAVAILABLE;
+	dd->deauth_reason = 0;
 	itlwm_get_bssid(fItlWm, dd->deauth_ea.octet);
+	IOLog("Deauth reason: %d, state: %d\n", dd->deauth_reason, state);
 	return kIOReturnSuccess;
 }
 
@@ -1072,10 +1076,13 @@ IOReturn Black80211Control::setRSN_IE(IO80211Interface *interface,
 IOReturn Black80211Control::getASSOCIATION_STATUS(IO80211Interface *interface,
 												  struct apple80211_assoc_status_data *sd) {
 	sd->version = APPLE80211_VERSION;
-	if (itlwm_get_state(fItlWm) == APPLE80211_S_RUN)
-		sd->status = APPLE80211_RESULT_SUCCESS;
-	else
-		sd->status = APPLE80211_RESULT_UNAVAILABLE;
+	int state = itlwm_get_state(fItlWm);
+	//if (state == APPLE80211_S_RUN)
+	//	sd->status = APPLE80211_RESULT_SUCCESS;
+	//else
+	//	sd->status = APPLE80211_RESULT_UNAVAILABLE;
+	sd->status = 0;
+	IOLog("getASSOCIATION_STATUS: state %d, assoc status %d\n", state, sd->status);
 	return kIOReturnSuccess;
 }
 
@@ -1131,11 +1138,12 @@ IOReturn Black80211Control::getLINK_CHANGED_EVENT_DATA(IO80211Interface *interfa
 		return 16;
 
 	bzero(ed, sizeof(apple80211_link_changed_event_data));
-	ed->isLinkDown = itlwm_get_rate(fItlWm) == 0;
+	ed->isLinkDown = itlwm_get_state(fItlWm) != APPLE80211_S_RUN;
 	ed->rssi = itlwm_get_rssi(fItlWm);
 	if (ed->isLinkDown) {
 		ed->voluntary = true;
 		ed->reason = APPLE80211_LINK_DOWN_REASON_DEAUTH;
 	}
+	IOLog("Link down: %d, reason: %d\n", ed->isLinkDown, ed->reason);
 	return kIOReturnSuccess;
 }

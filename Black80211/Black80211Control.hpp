@@ -121,6 +121,8 @@ private:
     IOReturn setCIPHER_KEY(IO80211Interface* interface, struct apple80211_key* key);
     // 4 - CHANNEL
     IOReturn getCHANNEL(IO80211Interface* interface, struct apple80211_channel_data* cd);
+	// 6 - PROTMODE
+	IOReturn getPROTMODE(IO80211Interface* interface, struct apple80211_protmode_data* pd);
     // 7 - TXPOWER
     IOReturn getTXPOWER(IO80211Interface* interface, struct apple80211_txpower_data* txd);
     // 8 - RATE
@@ -152,8 +154,6 @@ private:
     IOReturn setPOWER(IO80211Interface* interface, struct apple80211_power_data* pd);
     // 20 - ASSOCIATE
     IOReturn setASSOCIATE(IO80211Interface* interface, struct apple80211_assoc_data* ad);
-	// 21 - ASSOCIATE_RESULT
-	IOReturn getASSOCIATE_RESULT(IO80211Interface* interface, struct apple80211_assoc_result_data* ard);
     // 22 - DISASSOCIATE
     IOReturn setDISASSOCIATE(IO80211Interface* interface);
     // 27 - SUPPORTED_CHANNELS

@@ -283,6 +283,9 @@ if (REQ_TYPE == SIOCSA80211) { \
         case APPLE80211_IOC_CHANNEL: // 4
             IOCTL_GET(request_type, CHANNEL, apple80211_channel_data);
             break;
+		case APPLE80211_IOC_PROTMODE: // 6
+			IOCTL_GET(request_type, PROTMODE, apple80211_protmode_data);
+			break;
         case APPLE80211_IOC_TXPOWER: // 7
             IOCTL_GET(request_type, TXPOWER, apple80211_txpower_data);
             break;
@@ -328,9 +331,6 @@ if (REQ_TYPE == SIOCSA80211) { \
         case APPLE80211_IOC_ASSOCIATE: // 20
             IOCTL_SET(request_type, ASSOCIATE, apple80211_assoc_data);
             break;
-		case APPLE80211_IOC_ASSOCIATE_RESULT: // 21
-			IOCTL_GET(request_type, ASSOCIATE_RESULT, apple80211_assoc_result_data);
-			break;
 		case APPLE80211_IOC_DISASSOCIATE: // 22
 			if (request_type == SIOCSA80211)
 				ret = setDISASSOCIATE(interface);
