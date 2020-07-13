@@ -209,9 +209,6 @@ public:
     
 	size_t networkIndex = 0;
 
-	u_int8_t current_rsn_ie[ APPLE80211_MAX_RSN_IE_LEN ];
-	u_int8_t current_rsn_ie_length;
-
     OSDictionary* mediumDict;
     IONetworkMedium* mediumTable[MEDIUM_TYPE_INVALID];
 

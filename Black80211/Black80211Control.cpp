@@ -25,8 +25,6 @@ bool Black80211Control::init(OSDictionary* parameters) {
 	requestedScanning = false;
 	powerState = APPLE80211_POWER_ON;
 	networkIndex = 0;
-	current_rsn_ie_length = 0;
-	memset(current_rsn_ie, 0, APPLE80211_MAX_RSN_IE_LEN);
 
 	authtype_upper = 0;
 	authtype_lower = 0;

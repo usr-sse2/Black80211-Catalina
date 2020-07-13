@@ -241,8 +241,6 @@ enum apple80211_channel_flag
     // extension channel is below.
 };
 
-// 0xc07 = APPLE80211_C_FLAG_10MHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_40MHZ | 0x400 | 0x800
-
 enum apple80211_rate_flag
 {
     APPLE80211_RATE_FLAG_NONE    = 0x0,    // no flags
@@ -438,6 +436,7 @@ struct apple80211_rate
 #define APPLE80211_MBUF_SET_WME_AC( m, ac ) mbuf_pkthdr_setrcvif( m, (ifnet_t)ac )
 #define APPLE80211_MBUF_WME_AC( m ) (int)mbuf_pkthdr_rcvif( m )
 
+// FIXME: seems that rates array starts at 0x24, immediately after 
 struct apple80211_scan_result
 {
     u_int32_t                    version; // 0x00 - 0x03

@@ -15,196 +15,6 @@ const char *fake_country_code = "RU";
 
 #define CHANNELS
 
-static apple80211_channel supported_channels[] = {
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 1,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-#ifdef CHANNELS
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 2,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 3,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 4,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 5,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 6,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 7,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 8,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 9,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 10,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 11,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 12,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 13,
-		.flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 36,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 40,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 44,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 48,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 52,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 56,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 60,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 64,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 100,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 104,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 108,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 112,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 116,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 120,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 124,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 128,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 132,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 136,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 140,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 149,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 153,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 157,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 161,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	},
-	{
-		.version = APPLE80211_VERSION,
-		.channel = 165,
-		.flags = APPLE80211_C_FLAG_5GHZ | APPLE80211_C_FLAG_40MHZ | APPLE80211_C_FLAG_ACTIVE
-	}
-#endif
-};
-
 extern void itlwm_enable(IONetworkController *itlwm);
 extern void itlwm_disable(IONetworkController *itlwm);
 extern interop_scan_result* itlwm_get_scan_result(IONetworkController *itlwm);
@@ -219,7 +29,12 @@ extern int itlwm_get_rssi(IONetworkController *self);
 extern int itlwm_get_noise(IONetworkController *self);
 extern int itlwm_get_state(IONetworkController *self);
 extern bool itlwm_is_scanning(IONetworkController *self);
-
+extern void itlwm_get_rsn_ie(IONetworkController *self, uint16_t &ie_len, uint8_t ie_buf[257]);
+struct channel_desc {
+	uint8_t channel_num;
+	uint32_t channel_flags;
+};
+extern void itlwm_get_supported_channels(IONetworkController *self, uint32_t &channels_count, struct channel_desc channel_desc[APPLE80211_MAX_CHANNELS]);
 
 //
 // MARK: 1 - SSID
@@ -970,8 +785,23 @@ IOReturn Black80211Control::setDISASSOCIATE(IO80211Interface *interface) {
 IOReturn Black80211Control::getSUPPORTED_CHANNELS(IO80211Interface *interface,
                                                   struct apple80211_sup_channel_data *ad) {
     ad->version = APPLE80211_VERSION;
-    ad->num_channels = sizeof(supported_channels) / sizeof(struct apple80211_channel);
-	memcpy(ad->supported_channels, supported_channels, sizeof(supported_channels));
+#ifdef CHANNELS
+	channel_desc channels[APPLE80211_MAX_CHANNELS];
+	itlwm_get_supported_channels(fItlWm, ad->num_channels, channels);
+	ad->num_channels = MIN(APPLE80211_MAX_CHANNELS, ad->num_channels);
+	for (int i = 0; i < ad->num_channels; i++) {
+		auto& apple_channel = ad->supported_channels[i];
+		auto& ieee_channel = channels[i];
+		apple_channel.version = APPLE80211_VERSION;
+		apple_channel.channel = ieee_channel.channel_num;
+		apple_channel.flags = ieee_channel.channel_flags;
+	}
+#else
+	ad->num_channels = 1;
+	ad->supported_channels[0].version = APPLE80211_VERSION;
+	ad->supported_channels[0].channel = 1;
+	ad->supported_channels[0].flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE;
+#endif
     return kIOReturnSuccess;
 }
 
@@ -1057,16 +887,12 @@ IOReturn Black80211Control::getHARDWARE_VERSION(IO80211Interface *interface,
 IOReturn Black80211Control::getRSN_IE(IO80211Interface *interface,
                                                 struct apple80211_rsn_ie_data *rsn_ie_data) {
     rsn_ie_data->version = APPLE80211_VERSION;
-	rsn_ie_data->len = current_rsn_ie_length;
-	memcpy(rsn_ie_data->ie, current_rsn_ie, current_rsn_ie_length);
+	itlwm_get_rsn_ie(fItlWm, rsn_ie_data->len, rsn_ie_data->ie);
     return kIOReturnSuccess;
 }
 
 IOReturn Black80211Control::setRSN_IE(IO80211Interface *interface,
                                                 struct apple80211_rsn_ie_data *rsn_ie_data) {
-    rsn_ie_data->version = APPLE80211_VERSION;
-	current_rsn_ie_length = rsn_ie_data->len;
-	memcpy(current_rsn_ie, rsn_ie_data->ie, current_rsn_ie_length);
     return kIOReturnSuccess;
 }
 
