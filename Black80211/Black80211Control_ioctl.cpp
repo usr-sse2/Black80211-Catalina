@@ -18,7 +18,7 @@ const char *fake_country_code = "RU";
 extern void itlwm_enable(IONetworkController *itlwm);
 extern void itlwm_disable(IONetworkController *itlwm);
 extern interop_scan_result* itlwm_get_scan_result(IONetworkController *itlwm);
-extern void itlwm_associate(IONetworkController *self, const u_int8_t* ssid, const u_int8_t *key, u_int32_t key_len);
+extern void itlwm_associate(IONetworkController *self);
 extern void itlwm_disassociate(IONetworkController *self);
 extern void itlwm_bgscan(IONetworkController *self, void* target, void (* callback)(void*), uint8_t* channels, uint32_t length);
 extern void itlwm_get_essid(IONetworkController *self, struct ieee80211_nwid& nwid);
@@ -35,6 +35,11 @@ struct channel_desc {
 	uint32_t channel_flags;
 };
 extern void itlwm_get_supported_channels(IONetworkController *self, uint32_t &channels_count, struct channel_desc channel_desc[APPLE80211_MAX_CHANNELS]);
+extern void itlwm_set_ssid(IONetworkController* self, const char* ssid);
+extern void itlwm_set_open(IONetworkController* self);
+extern void itlwm_set_wep_key(IONetworkController* self, const u_int8_t *key, size_t key_len, int key_index);
+extern void itlwm_set_eap(IONetworkController* self);
+extern void itlwm_set_wpa_key(IONetworkController* self, const u_int8_t *key, size_t key_len);
 
 //
 // MARK: 1 - SSID
@@ -58,7 +63,7 @@ IOReturn Black80211Control::getSSID(IO80211Interface *interface,
 
 IOReturn Black80211Control::setSSID(IO80211Interface *interface,
                                     struct apple80211_ssid_data *sd) {
-    
+	itlwm_set_ssid(fItlWm, (const char*)sd->ssid_bytes);
     fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
     return kIOReturnSuccess;
 }
@@ -105,6 +110,21 @@ IOReturn Black80211Control::getCIPHER_KEY(IO80211Interface *interface,
 IOReturn Black80211Control::setCIPHER_KEY(IO80211Interface *interface,
                                          struct apple80211_key *key) {
 	cipher_key = *key;
+	switch (key->key_cipher_type) {
+		case APPLE80211_CIPHER_NONE:
+			IOLog("Setting open network\n");
+			itlwm_set_open(fItlWm);
+			break;
+		case APPLE80211_CIPHER_WEP_40:
+		case APPLE80211_CIPHER_WEP_104:
+			IOLog("Setting WEP key %d\n", key->key_index);
+			itlwm_set_wep_key(fItlWm, key->key, key->key_len, key->key_index);
+			break;
+		default:
+			IOLog("Setting WPA key\n");
+			itlwm_set_wpa_key(fItlWm, key->key, key->key_len);
+			break;
+	}
 	//fInterface->postMessage(APPLE80211_M_CIPHER_KEY_CHANGED);
     return kIOReturnSuccess;
 }
@@ -738,21 +758,13 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 	authtype_data.authtype_upper = ad->ad_auth_upper;
 	setAUTH_TYPE(interface, &authtype_data);
 
+	/*
 	apple80211_rsn_ie_data rsn_ie_data;
 	rsn_ie_data.version = APPLE80211_VERSION;
 	rsn_ie_data.len = ad->ad_rsn_ie_len;
 	memcpy(rsn_ie_data.ie, ad->ad_rsn_ie, rsn_ie_data.len);
 	setRSN_IE(interface, &rsn_ie_data);
-
-	setCIPHER_KEY(interface, &ad->ad_key);
-
-	itlwm_associate(fItlWm, ad->ad_ssid, ad->ad_key.key, ad->ad_key.key_len);
-	IOSleep(5000);
-    fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkUp, 0);
-
-
-
-	// setAP_MODE(interface, ap_mode);
+	 */
 
 	apple80211_ssid_data ssid_data;
 	ssid_data.version = APPLE80211_VERSION;
@@ -760,6 +772,14 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 	memcpy(ssid_data.ssid_bytes, ad->ad_ssid, APPLE80211_MAX_SSID_LEN);
 	setSSID(interface, &ssid_data);
 
+	setCIPHER_KEY(interface, &ad->ad_key);
+	itlwm_associate(fItlWm);
+	IOSleep(5000);
+
+    fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
+    fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkUp, 0);
+
+	// setAP_MODE(interface, ap_mode);
 	// don't set BSSID – it is set by the driver
 
 	return kIOReturnSuccess;

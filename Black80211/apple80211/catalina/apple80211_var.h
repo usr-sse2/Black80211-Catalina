@@ -239,6 +239,7 @@ enum apple80211_channel_flag
     APPLE80211_C_FLAG_EXT_ABV    = 0x200,    // If 40 Mhz, extension channel above.
     // If this flag is not set, then the
     // extension channel is below.
+	APPLE80211_C_FLAG_80MHZ = 0x400 // name made up - set if channelWidth == 80 && 5ghz && AC
 };
 
 enum apple80211_rate_flag
@@ -568,8 +569,27 @@ struct apple80211_status_msg_hdr
 #define APPLE80211_M_COUNTRY_CODE_CHANGED    11
 #define APPLE80211_M_STA_ARRIVE                12
 #define APPLE80211_M_STA_LEAVE                13
+#define APPLE80211_M_DECRYPTION_FAILURE 14
+#define APPLE80211_M_SCAN_CACHE_UPDATED 15
+#define APPLE80211_M_INTERNAL_SCAN_DONE 16
+#define APPLE80211_M_LINK_QUALITY 17
+#define APPLE80211_M_IBSS_PEER_ARRIVED 18
+#define APPLE80211_M_IBSS_PEER_LEFT 19
+#define APPLE80211_M_RSN_HANDSHAKE_DONE 20
+#define APPLE80211_M_BT_COEX_CHANGED 21
+#define APPLE80211_M_P2P_PEER_DETECTED 22
+#define APPLE80211_M_P2P_LISTEN_COMPLETE 23
+#define APPLE80211_M_P2P_SCAN_COMPLETE 24
+#define APPLE80211_M_P2P_LISTEN_STARTED 25
+#define APPLE80211_M_P2P_SCAN_STARTED 26
+#define APPLE80211_M_P2P_INTERFACE_CREATED 27
+#define APPLE80211_M_P2P_GROUP_STARTED 28
+#define APPLE80211_M_BGSCAN_NET_DISCOVERED 29
+#define APPLE80211_M_ROAMED 30
+#define APPLE80211_M_ACT_FRM_TX_COMPLETE 31
+#define APPLE80211_M_DEAUTH_RECEIVED 32
 
-#define APPLE80211_M_MAX                    13
+#define APPLE80211_M_MAX                    32
 #define APPLE80211_M_BUFF_SIZE                APPLE80211_MAP_SIZE( APPLE80211_M_MAX )
 
 // Registry Information
