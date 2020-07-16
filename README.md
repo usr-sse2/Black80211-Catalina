@@ -6,10 +6,18 @@ This project joins https://github.com/AppleIntelWifi/Black80211-Catalina and htt
 
 The following actions already work:
 - Turning Wi-Fi off and on
-- Scanning networks (currently is poor due to frequent error 16 or timeouts)
-- Connecting to open and WPA2 Personal networks using entered password
+- Scanning networks (currently is poor due to frequent error 16, timeouts or airportd silently ignoring reported scan results)
+- Connecting to Open, WEP Open System and WPA2 Personal networks using entered password
 
-Other encryption types are not tested. Loading on boot is not tested (I load it manually using kextutil).
+The following authentication types are not supported:
+- WEP Shared Key
+- WPA3
+- OWE
+- All kinds of WPA Enterprise
+
+The following has not been tested:
+- WPA Personal
+- Loading on boot (I load it manually using kextutil).
 
 itlwm should be used from https://github.com/usr-sse2/itlwm
 
