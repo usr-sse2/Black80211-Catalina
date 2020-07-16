@@ -64,7 +64,7 @@ IOReturn Black80211Control::getSSID(IO80211Interface *interface,
 IOReturn Black80211Control::setSSID(IO80211Interface *interface,
                                     struct apple80211_ssid_data *sd) {
 	itlwm_set_ssid(fItlWm, (const char*)sd->ssid_bytes);
-    fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
+    //fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
     return kIOReturnSuccess;
 }
 
@@ -774,7 +774,7 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 
 	setCIPHER_KEY(interface, &ad->ad_key);
 	itlwm_associate(fItlWm);
-	IOSleep(5000);
+	//IOSleep(5000);
 
     fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
     fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkUp, 0);
@@ -793,7 +793,7 @@ IOReturn Black80211Control::setDISASSOCIATE(IO80211Interface *interface) {
     IOLog("Black80211::disassociate\n");
 	requestedScanning = false;
 	itlwm_disassociate(fItlWm);
-	fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkDown, 0);
+	//fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkDown, 0);
 	return kIOReturnSuccess;
 }
 
