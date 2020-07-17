@@ -6,8 +6,11 @@ It works in such way:
 
 - There are two network interfaces: Ethernet from itlwm and Wi-Fi from Black80211.
 - Ethernet interface is used for actual data transfer, it has the real MAC and IP addresses.
+
 ![interfaces](NetworkInterfaces.png)
+
 - Wi-Fi interface is used only for control, it should be manually set to a link-local IP address and made the lowest priority (order) in Network Preferences.
+
 ![ip](IPSettings.png)
 
 The following actions already work:
