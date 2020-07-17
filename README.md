@@ -1,8 +1,14 @@
-This project joins https://github.com/AppleIntelWifi/Black80211-Catalina and https://github.com/OpenIntelWireless/itlwm to provide a wireless driver for Intel adapters that can be controlled using native AirPort menu item. It works in such way:
+This project joins https://github.com/AppleIntelWifi/Black80211-Catalina and https://github.com/OpenIntelWireless/itlwm to provide a wireless driver for Intel adapters that can be controlled using native ![AirPort](NetworkMenuIcon.png) menu item.
+
+![menu](NetworkMenu.png) 
+
+It works in such way:
 
 - There are two network interfaces: Ethernet from itlwm and Wi-Fi from Black80211.
 - Ethernet interface is used for actual data transfer, it has the real MAC and IP addresses.
+![interfaces](NetworkInterfaces.png)
 - Wi-Fi interface is used only for control, it should be manually set to a link-local IP address and made the lowest priority (order) in Network Preferences.
+![ip](IPSettings.png)
 
 The following actions already work:
 - Turning Wi-Fi off and on
@@ -30,3 +36,5 @@ sudo chown -R root:wheel *.kext
 sudo chmod -R 755 *.kext
 kextutil Black80211.kext -r .
 ```
+
+![profiler](SystemProfiler.png)
