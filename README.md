@@ -21,6 +21,8 @@ The following has not been tested:
 
 itlwm should be used from https://github.com/usr-sse2/itlwm
 
+Only macOS Catalina is supported.
+
 How to load:
 put Black80211.kext and itlwm.kext in the same folder
 ```bash
