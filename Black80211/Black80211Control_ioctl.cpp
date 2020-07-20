@@ -20,7 +20,7 @@ extern void itlwm_disable(IONetworkController *itlwm);
 extern interop_scan_result* itlwm_get_scan_result(IONetworkController *itlwm);
 extern void itlwm_associate(IONetworkController *self);
 extern void itlwm_disassociate(IONetworkController *self);
-extern void itlwm_bgscan(IONetworkController *self, void* target, void (* callback)(void*), uint8_t* channels, uint32_t length);
+extern void itlwm_bgscan(IONetworkController *self, void* target, void (* callback)(void*), uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
 extern void itlwm_get_essid(IONetworkController *self, struct ieee80211_nwid& nwid);
 extern void itlwm_get_bssid(IONetworkController *self, u_int8_t * bssid);
 extern int itlwm_get_channel(IONetworkController *self);
@@ -216,25 +216,19 @@ static void scanCallback(void *target) {
 }
 
 static IOReturn scanAction(OSObject *target, void *arg0, void *arg1, void *arg2, void *arg3) {
-    //IO80211Interface *iface = (IO80211Interface *)arg0;
-    Black80211Control *controller = (Black80211Control*)arg1;
-	//IOLog("Reporting previous scan result\n");
-	//controller->networkIndex = 0;
-	//controller->scan_result = itlwm_get_scan_result(controller->fItlWm);
-	//iface->postMessage(APPLE80211_M_SCAN_DONE);
+    Black80211Control *controller = (Black80211Control*)arg0;
+	auto &sd = controller->request;
+	IOLog("Begin scanning\n");
+	controller->requestedScanning = true;
 
-	//if (!controller->requestedScanning || !itlwm_is_scanning(controller->fItlWm)) {
-		IOLog("Begin scanning\n");
-		controller->requestedScanning = true;
-		itlwm_bgscan(controller->fItlWm, controller, scanCallback, (uint8_t*)arg2, *(uint32_t*)arg3);
+	IOLog("Channels:\n");
+	uint8_t channels[255];
+	for (int i = 0; i < sd.num_channels; i++) {
+		IOLog("%d\n", sd.channels[i].channel);
+		channels[i] = sd.channels[i].channel;
+	}
 
-		//for (int i = 0; i < 30 && controller->requestedScanning && itlwm_is_scanning(controller->fItlWm); i++) {
-		//	IOLog("Still not done\n");
-		//	IOSleep(1000);
-		//}
-		//IOLog("Success\n");
-	//}
-
+	itlwm_bgscan(controller->fItlWm, controller, scanCallback, channels, sd.num_channels, (const char*)sd.ssid, sd.ssid_len);
     return kIOReturnSuccess;
 }
 
@@ -273,17 +267,10 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 		  sd->rest_time,
 		  sd->num_channels);
 
-	IOLog("SSID: %s\n", sd->ssid);
+	IOLog("SSID: %.*s\n", sd->ssid_len + 1, sd->ssid);
 
 	uint8_t *b = sd->bssid.octet;
 	IOLog("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\n", b[0], b[1], b[2], b[3], b[4], b[5]);
-
-	IOLog("Channels:\n");
-	uint8_t channels[255];
-	for (int i = 0; i < sd->num_channels; i++) {
-		IOLog("%d\n", sd->channels[i].channel);
-		channels[i] = sd->channels[i].channel;
-	}
 
 	if (sd->scan_type == APPLE80211_SCAN_TYPE_FAST) {
 	  IOLog("Reporting previous scan result\n");
@@ -293,8 +280,7 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 	  return kIOReturnSuccess;
 	}
 
-	if (interface)
-		fCommandGate->runAction(scanAction, interface, this, channels, &sd->num_channels);
+	fCommandGate->runAction(scanAction, this);
 
 	return kIOReturnSuccess;
 }
@@ -302,59 +288,6 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 IOReturn Black80211Control::setSCAN_REQ_MULTIPLE(
 IO80211Interface *interface, struct apple80211_scan_multiple_data *sd) {
 	return kIOReturnUnsupported;
-	if (requestedScanning && itlwm_is_scanning(fItlWm)) {
-		IOLog("Error: already scanning\n");
-	/*	return iokit_family_err(sub_iokit_wlan, 0x446);
-		IOLog("Reporting previous scan result\n");
-		networkIndex = 0;
-		scan_result = itlwm_get_scan_result(fItlWm);
-		interface->postMessage(APPLE80211_M_SCAN_DONE);
-		return kIOReturnSuccess;*/
-	}
-
-	requestIsMulti = true;
-	memcpy(&multiRequest, sd, sizeof(struct apple80211_scan_multiple_data));
-
-	networkIndex = 0;
-
-	IOLog("Black80211. Multiple scan requested. Type: %u\n"
-		"PHY Mode: %u\n"
-		"Dwell time: %u\n"
-		"Rest time: %u\n",
-		  sd->scan_type,
-		  sd->phy_mode,
-		  sd->dwell_time,
-		  sd->rest_time);
-	IOLog("SSIDs:\n");
-	for (int i = 0; i < sd->ssid_count; i++) // FIXME: may be not null-terminated
-		IOLog("%s\n", sd->ssids[i].ssid_bytes);
-
-	IOLog("BSSIDs:\n");
-	for (int i = 0; i < sd->bssid_count; i++) {
-		uint8_t *b = sd->bssids[i].octet;
-		IOLog("%02x:%02x:%02x:%02x:%02x:%02x\n", b[0], b[1], b[2], b[3], b[4], b[5]);
-	}
-
-	IOLog("Channels:\n");
-	uint8_t channels[255];
-	for (int i = 0; i < sd->num_channels; i++) {
-		IOLog("%d\n", sd->channels[i].channel);
-		channels[i] = sd->channels[i].channel;
-	}
-
-
-	if (sd->scan_type == APPLE80211_SCAN_TYPE_FAST/* || (sd->num_channels > 0 && sd->channels[0].channel != 1)*/) {
-	  IOLog("Reporting previous scan result\n");
-	  networkIndex = 0;
-	  scan_result = itlwm_get_scan_result(fItlWm);
-	  interface->postMessage(APPLE80211_M_SCAN_DONE);
-	  return kIOReturnSuccess;
-	}
-
-	if (interface)
-		fCommandGate->runAction(scanAction, interface, this, channels, &sd->num_channels);
-
-	return kIOReturnSuccess;
 }
 
 

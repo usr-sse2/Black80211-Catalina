@@ -12,6 +12,8 @@ typedef unsigned int ifnet_ctl_cmd_t;
 OSDefineMetaClassAndStructors(Black80211Control, IO80211Controller);
 #define super IO80211Controller
 
+extern IOReturn itlwm_get_mac_address(IONetworkController* self, IOEthernetAddress* address);
+
 bool Black80211Control::init(OSDictionary* parameters) {
     IOLog("Black80211: Init\n");
     
@@ -211,12 +213,10 @@ void Black80211Control::stop(IOService* provider) {
 }
 
 IOReturn Black80211Control::getHardwareAddress(IOEthernetAddress* addr) {
-    addr->bytes[0] = 0xAA;
-    addr->bytes[1] = 0x99;
-    addr->bytes[2] = 0x88;
-    addr->bytes[3] = 0x77;
-    addr->bytes[4] = 0x66;
-    addr->bytes[5] = 0x55;
+	IOReturn ret = itlwm_get_mac_address(fItlWm, addr);
+	if (ret != kIOReturnSuccess)
+		return ret;
+	addr->bytes[5]++;
     return kIOReturnSuccess;
 }
 
