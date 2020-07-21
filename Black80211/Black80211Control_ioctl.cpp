@@ -20,11 +20,12 @@ extern void itlwm_disable(IONetworkController *itlwm);
 extern interop_scan_result* itlwm_get_scan_result(IONetworkController *itlwm);
 extern void itlwm_associate(IONetworkController *self);
 extern void itlwm_disassociate(IONetworkController *self);
-extern void itlwm_bgscan(IONetworkController *self, void* target, void (* callback)(void*), uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
+extern IOReturn itlwm_bgscan(IONetworkController *self, void* target, void (* callback)(void*), uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
 extern void itlwm_get_essid(IONetworkController *self, struct ieee80211_nwid& nwid);
 extern void itlwm_get_bssid(IONetworkController *self, u_int8_t * bssid);
 extern int itlwm_get_channel(IONetworkController *self);
 extern int itlwm_get_rate(IONetworkController *self);
+extern int itlwm_get_mcs(IONetworkController *self);
 extern int itlwm_get_rssi(IONetworkController *self);
 extern int itlwm_get_noise(IONetworkController *self);
 extern int itlwm_get_state(IONetworkController *self);
@@ -228,15 +229,14 @@ static IOReturn scanAction(OSObject *target, void *arg0, void *arg1, void *arg2,
 		channels[i] = sd.channels[i].channel;
 	}
 
-	itlwm_bgscan(controller->fItlWm, controller, scanCallback, channels, sd.num_channels, (const char*)sd.ssid, sd.ssid_len);
-    return kIOReturnSuccess;
+	return itlwm_bgscan(controller->fItlWm, controller, scanCallback, channels, sd.num_channels, (const char*)sd.ssid, sd.ssid_len);
 }
 
 //
 // MARK: 10 - SCAN_REQ
 //
 IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
-                                        struct apple80211_scan_data *sd) {
+										struct apple80211_scan_data *sd) {
 	if (requestedScanning && itlwm_is_scanning(fItlWm)) {
 		IOLog("Error: already scanning\n");
 		return iokit_family_err(sub_iokit_wlan, 0x446);
@@ -280,9 +280,10 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 	  return kIOReturnSuccess;
 	}
 
-	fCommandGate->runAction(scanAction, this);
-
-	return kIOReturnSuccess;
+	IOReturn status = fCommandGate->runAction(scanAction, this);
+	if (status != kIOReturnSuccess)
+		requestedScanning = false;
+	return status;
 }
 
 IOReturn Black80211Control::setSCAN_REQ_MULTIPLE(
@@ -726,6 +727,7 @@ IOReturn Black80211Control::setDISASSOCIATE(IO80211Interface *interface) {
     IOLog("Black80211::disassociate\n");
 	requestedScanning = false;
 	itlwm_disassociate(fItlWm);
+    fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
 	//fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkDown, 0);
 	return kIOReturnSuccess;
 }
@@ -881,7 +883,7 @@ IOReturn Black80211Control::getCOUNTRY_CODE(IO80211Interface *interface,
 //
 IOReturn Black80211Control::getMCS(IO80211Interface* interface, struct apple80211_mcs_data* md) {
     md->version = APPLE80211_VERSION;
-    md->index = APPLE80211_MCS_INDEX_AUTO;
+    md->index = itlwm_get_mcs(fItlWm);
     return kIOReturnSuccess;
 }
 
