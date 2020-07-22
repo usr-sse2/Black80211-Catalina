@@ -20,7 +20,7 @@ extern void itlwm_disable(IONetworkController *itlwm);
 extern interop_scan_result* itlwm_get_scan_result(IONetworkController *itlwm);
 extern void itlwm_associate(IONetworkController *self);
 extern void itlwm_disassociate(IONetworkController *self);
-extern IOReturn itlwm_bgscan(IONetworkController *self, void* target, void (* callback)(void*), uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
+extern IOReturn itlwm_bgscan(IONetworkController *self, uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
 extern void itlwm_get_essid(IONetworkController *self, struct ieee80211_nwid& nwid);
 extern void itlwm_get_bssid(IONetworkController *self, u_int8_t * bssid);
 extern int itlwm_get_channel(IONetworkController *self);
@@ -41,6 +41,27 @@ extern void itlwm_set_open(IONetworkController* self);
 extern void itlwm_set_wep_key(IONetworkController* self, const u_int8_t *key, size_t key_len, int key_index);
 extern void itlwm_set_eap(IONetworkController* self);
 extern void itlwm_set_wpa_key(IONetworkController* self, const u_int8_t *key, size_t key_len);
+
+#define kIOMessageNetworkChanged iokit_vendor_specific_msg(1)
+#define kIOMessageScanComplete iokit_vendor_specific_msg(2)
+
+IOReturn Black80211Control::message(UInt32 type, IOService *provider, void *argument) {
+	switch (type) {
+		case kIOMessageNetworkChanged:
+			fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
+			return kIOReturnSuccess;
+		case kIOMessageScanComplete:
+			if (requestedScanning) {
+				requestedScanning = false;
+				networkIndex = 0;
+				scan_result = itlwm_get_scan_result(fItlWm);
+				IOLog("Black80211: Scanning complete, found %lu networks\n", scan_result->count);
+				fInterface->postMessage(APPLE80211_M_SCAN_DONE);
+			}
+			return kIOReturnSuccess;
+	}
+	return kIOReturnUnsupported;
+}
 
 //
 // MARK: 1 - SSID
@@ -206,16 +227,6 @@ IOReturn Black80211Control::getBSSID(IO80211Interface *interface,
     return kIOReturnSuccess;
 }
 
-static void scanCallback(void *target) {
-	Black80211Control *controller = (Black80211Control*)target;
-	controller->requestedScanning = false;
-	IO80211Interface *iface = controller->fInterface;
-	controller->networkIndex = 0;
-	controller->scan_result = itlwm_get_scan_result(controller->fItlWm);
-	IOLog("Black80211: Scanning complete, found %lu networks\n", controller->scan_result->count);
-	iface->postMessage(APPLE80211_M_SCAN_DONE);
-}
-
 static IOReturn scanAction(OSObject *target, void *arg0, void *arg1, void *arg2, void *arg3) {
     Black80211Control *controller = (Black80211Control*)arg0;
 	auto &sd = controller->request;
@@ -229,7 +240,7 @@ static IOReturn scanAction(OSObject *target, void *arg0, void *arg1, void *arg2,
 		channels[i] = sd.channels[i].channel;
 	}
 
-	return itlwm_bgscan(controller->fItlWm, controller, scanCallback, channels, sd.num_channels, (const char*)sd.ssid, sd.ssid_len);
+	return itlwm_bgscan(controller->fItlWm, channels, sd.num_channels, (const char*)sd.ssid, sd.ssid_len);
 }
 
 //

@@ -105,6 +105,8 @@ public:
     
     bool createWorkLoop() override;
     IOWorkLoop* getWorkLoop() const override;
+
+	IOReturn message(UInt32 type, IOService * provider, void * argument = NULL) override;
     
 protected:
     IO80211Interface* getInterface();
@@ -193,7 +195,6 @@ private:
         OSSafeReleaseNULL(fWorkloop);
         OSSafeReleaseNULL(mediumDict);
         OSSafeReleaseNULL(fWorkloop);
-		OSSafeReleaseNULL(fItlWm);
     }
     
     bool addMediumType(UInt32 type, UInt32 speed, UInt32 code, char* name = 0);

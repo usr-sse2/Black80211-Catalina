@@ -62,8 +62,7 @@ IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
 	}
 
 	OSSafeReleaseNULL(matchingDict);
-	fItlWm->retain();
-    
+
     return this;
 }
 
@@ -86,6 +85,8 @@ bool Black80211Control::start(IOService* provider) {
         ReleaseAll();
         return false;
     }
+
+	attach(fItlWm);
 
     //fWorkloop = (IO80211WorkLoop *)getWorkLoop();
     if (!fWorkloop) {
@@ -208,6 +209,8 @@ void Black80211Control::stop(IOService* provider) {
 		OSSafeReleaseNULL(fInterface);
         fInterface = NULL;
     }
+
+	detach(fItlWm);
     
     super::stop(provider);
 }
