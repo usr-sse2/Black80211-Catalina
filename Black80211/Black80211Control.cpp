@@ -13,6 +13,7 @@ OSDefineMetaClassAndStructors(Black80211Control, IO80211Controller);
 #define super IO80211Controller
 
 extern IOReturn itlwm_get_mac_address(IONetworkController* self, IOEthernetAddress* address);
+extern void itlwm_set_interface(IONetworkController* self, IOEthernetInterface* interface);
 
 bool Black80211Control::init(OSDictionary* parameters) {
     IOLog("Black80211: Init\n");
@@ -87,7 +88,6 @@ bool Black80211Control::start(IOService* provider) {
     }
 
 	attach(fItlWm);
-
     //fWorkloop = (IO80211WorkLoop *)getWorkLoop();
     if (!fWorkloop) {
         IOLog("Black80211: Failed to get workloop!\n");
@@ -151,7 +151,8 @@ bool Black80211Control::start(IOService* provider) {
     }
 
 	((uint8_t*)fInterface)[0x160] &= ~2; // disable use of Apple RSN supplicant
-        
+
+	itlwm_set_interface(fItlWm, fInterface);
     
     fInterface->registerService();
     registerService();
@@ -219,7 +220,7 @@ IOReturn Black80211Control::getHardwareAddress(IOEthernetAddress* addr) {
 	IOReturn ret = itlwm_get_mac_address(fItlWm, addr);
 	if (ret != kIOReturnSuccess)
 		return ret;
-	addr->bytes[5]++;
+	//addr->bytes[5]++;
     return kIOReturnSuccess;
 }
 
@@ -411,8 +412,7 @@ IO80211Interface* Black80211Control::getNetworkInterface() {
 }
 
 UInt32 Black80211Control::outputPacket(mbuf_t m, void* param) {
-    freePacket(m);
-    return kIOReturnSuccess;
+	return fItlWm->outputPacket(m, param);
 }
 
 IOReturn Black80211Control::getMaxPacketSize( UInt32* maxSize ) const {
