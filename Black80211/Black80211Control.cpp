@@ -12,8 +12,9 @@ typedef unsigned int ifnet_ctl_cmd_t;
 OSDefineMetaClassAndStructors(Black80211Control, IO80211Controller);
 #define super IO80211Controller
 
-extern IOReturn itlwm_get_mac_address(IONetworkController* self, IOEthernetAddress* address);
-extern void itlwm_set_interface(IONetworkController* self, IOEthernetInterface* interface);
+extern IOReturn itlwm_get_mac_address(IOService* self, IOEthernetAddress* address);
+extern void itlwm_set_controller(IOService* self, IOEthernetController* io80211controller);
+extern void itlwm_set_interface(IOService* self, IOEthernetInterface* interface);
 
 bool Black80211Control::init(OSDictionary* parameters) {
     IOLog("Black80211: Init\n");
@@ -28,6 +29,8 @@ bool Black80211Control::init(OSDictionary* parameters) {
 	requestedScanning = false;
 	powerState = APPLE80211_POWER_ON;
 	networkIndex = 0;
+
+	fInterface = nullptr;
 
 	authtype_upper = 0;
 	authtype_lower = 0;
@@ -55,14 +58,15 @@ IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
 		return NULL;
 	}
 
-	fItlWm = OSDynamicCast(IONetworkController, provider->waitForMatchingService(matchingDict));
+	fItlWm = OSDynamicCast(IOService, provider->waitForMatchingService(matchingDict));
+	OSSafeReleaseNULL(matchingDict);
+
 	if (!fItlWm) {
 		IOLog("Black80211: failed to find itlwm\n");
-		OSSafeReleaseNULL(matchingDict);
 		return NULL;
 	}
 
-	OSSafeReleaseNULL(matchingDict);
+	itlwm_set_controller(fItlWm, this);
 
     return this;
 }
@@ -87,7 +91,6 @@ bool Black80211Control::start(IOService* provider) {
         return false;
     }
 
-	attach(fItlWm);
     //fWorkloop = (IO80211WorkLoop *)getWorkLoop();
     if (!fWorkloop) {
         IOLog("Black80211: Failed to get workloop!\n");
@@ -152,13 +155,23 @@ bool Black80211Control::start(IOService* provider) {
 
 	((uint8_t*)fInterface)[0x160] &= ~2; // disable use of Apple RSN supplicant
 
+	attach(fItlWm);
 	itlwm_set_interface(fItlWm, fInterface);
     
     fInterface->registerService();
     registerService();
-
     
     return true;
+}
+
+bool Black80211Control::setLinkStatus(
+UInt32                  status,
+const IONetworkMedium * activeMedium,
+UInt64                  speed,
+OSData *                data) {
+	if (!fInterface)
+		return false;
+	return super::setLinkStatus(status, activeMedium, speed, data);
 }
 
 IOReturn Black80211Control::enable(IONetworkInterface* iface) {
@@ -168,7 +181,7 @@ IOReturn Black80211Control::enable(IONetworkInterface* iface) {
     setLinkStatus(kIONetworkLinkActive | kIONetworkLinkValid, medium);
     
     if(fInterface) {
-        fInterface->postMessage(1);
+        fInterface->postMessage(APPLE80211_M_POWER_CHANGED);
     }
     
     return kIOReturnSuccess;
@@ -220,8 +233,7 @@ IOReturn Black80211Control::getHardwareAddress(IOEthernetAddress* addr) {
 	IOReturn ret = itlwm_get_mac_address(fItlWm, addr);
 	if (ret != kIOReturnSuccess)
 		return ret;
-	//addr->bytes[5]++;
-    return kIOReturnSuccess;
+	return kIOReturnSuccess;
 }
 
 IOReturn Black80211Control::getHardwareAddressForInterface(IO80211Interface* netif,
@@ -411,8 +423,10 @@ IO80211Interface* Black80211Control::getNetworkInterface() {
     return fInterface;
 }
 
+extern UInt32 itlwm_outputPacket(IOService* self, mbuf_t m, void *param);
+
 UInt32 Black80211Control::outputPacket(mbuf_t m, void* param) {
-	return fItlWm->outputPacket(m, param);
+	return itlwm_outputPacket(fItlWm, m, param);
 }
 
 IOReturn Black80211Control::getMaxPacketSize( UInt32* maxSize ) const {
@@ -439,11 +453,11 @@ SInt32 Black80211Control::monitorModeSetEnabled(IO80211Interface* interface,
 }
 
 const OSString* Black80211Control::newVendorString() const {
-    return OSString::withCString("black_wizard");
+    return OSString::withCString("Intel");
 }
 
 const OSString* Black80211Control::newModelString() const {
-    return OSString::withCString("BlackControl80211");
+    return OSString::withCString("802.11 Network Controller");
 }
 
 const OSString* Black80211Control::newRevisionString() const {

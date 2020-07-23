@@ -15,32 +15,32 @@ const char *fake_country_code = "RU";
 
 #define CHANNELS
 
-extern void itlwm_enable(IONetworkController *itlwm);
-extern void itlwm_disable(IONetworkController *itlwm);
-extern interop_scan_result* itlwm_get_scan_result(IONetworkController *itlwm);
-extern void itlwm_associate(IONetworkController *self);
-extern void itlwm_disassociate(IONetworkController *self);
-extern IOReturn itlwm_bgscan(IONetworkController *self, uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
-extern void itlwm_get_essid(IONetworkController *self, struct ieee80211_nwid& nwid);
-extern void itlwm_get_bssid(IONetworkController *self, u_int8_t * bssid);
-extern int itlwm_get_channel(IONetworkController *self);
-extern int itlwm_get_rate(IONetworkController *self);
-extern int itlwm_get_mcs(IONetworkController *self);
-extern int itlwm_get_rssi(IONetworkController *self);
-extern int itlwm_get_noise(IONetworkController *self);
-extern int itlwm_get_state(IONetworkController *self);
-extern bool itlwm_is_scanning(IONetworkController *self);
-extern void itlwm_get_rsn_ie(IONetworkController *self, uint16_t &ie_len, uint8_t ie_buf[257]);
+extern void itlwm_enable(IOService *itlwm);
+extern void itlwm_disable(IOService *itlwm);
+extern interop_scan_result* itlwm_get_scan_result(IOService *itlwm);
+extern void itlwm_associate(IOService *self);
+extern void itlwm_disassociate(IOService *self);
+extern IOReturn itlwm_bgscan(IOService *self, uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
+extern void itlwm_get_essid(IOService *self, struct ieee80211_nwid& nwid);
+extern void itlwm_get_bssid(IOService *self, u_int8_t * bssid);
+extern int itlwm_get_channel(IOService *self);
+extern int itlwm_get_rate(IOService *self);
+extern int itlwm_get_mcs(IOService *self);
+extern int itlwm_get_rssi(IOService *self);
+extern int itlwm_get_noise(IOService *self);
+extern int itlwm_get_state(IOService *self);
+extern bool itlwm_is_scanning(IOService *self);
+extern void itlwm_get_rsn_ie(IOService *self, uint16_t &ie_len, uint8_t ie_buf[257]);
 struct channel_desc {
 	uint8_t channel_num;
 	uint32_t channel_flags;
 };
-extern void itlwm_get_supported_channels(IONetworkController *self, uint32_t &channels_count, struct channel_desc channel_desc[APPLE80211_MAX_CHANNELS]);
-extern void itlwm_set_ssid(IONetworkController* self, const char* ssid);
-extern void itlwm_set_open(IONetworkController* self);
-extern void itlwm_set_wep_key(IONetworkController* self, const u_int8_t *key, size_t key_len, int key_index);
-extern void itlwm_set_eap(IONetworkController* self);
-extern void itlwm_set_wpa_key(IONetworkController* self, const u_int8_t *key, size_t key_len);
+extern void itlwm_get_supported_channels(IOService *self, uint32_t &channels_count, struct channel_desc channel_desc[APPLE80211_MAX_CHANNELS]);
+extern void itlwm_set_ssid(IOService* self, const char* ssid);
+extern void itlwm_set_open(IOService* self);
+extern void itlwm_set_wep_key(IOService* self, const u_int8_t *key, size_t key_len, int key_index);
+extern void itlwm_set_eap(IOService* self);
+extern void itlwm_set_wpa_key(IOService* self, const u_int8_t *key, size_t key_len);
 
 #define kIOMessageNetworkChanged iokit_vendor_specific_msg(1)
 #define kIOMessageScanComplete iokit_vendor_specific_msg(2)

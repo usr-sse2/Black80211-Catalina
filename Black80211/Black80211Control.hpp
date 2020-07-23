@@ -107,7 +107,12 @@ public:
     IOWorkLoop* getWorkLoop() const override;
 
 	IOReturn message(UInt32 type, IOService * provider, void * argument = NULL) override;
-    
+
+	virtual bool setLinkStatus(
+							   UInt32                  status,
+							   const IONetworkMedium * activeMedium = 0,
+							   UInt64                  speed        = 0,
+							   OSData *                data         = 0) override;
 protected:
     IO80211Interface* getInterface();
     
@@ -206,7 +211,7 @@ public:
     IO80211Interface* fInterface;
     IOGatedOutputQueue* fOutputQueue;
     IOCommandGate* fCommandGate;
-	IONetworkController* fItlWm;
+	IOService* fItlWm;
     
 	size_t networkIndex = 0;
 
