@@ -6,6 +6,7 @@ typedef unsigned int ifnet_ctl_cmd_t;
 #include "IONetworkController.h"
 
 #include "Black80211Control.hpp"
+#include "Black80211Interface.hpp"
 
 #include "debug.h"
 
@@ -31,6 +32,10 @@ bool Black80211Control::init(OSDictionary* parameters) {
 	networkIndex = 0;
 
 	fInterface = nullptr;
+	fTimerEventSource = nullptr;
+	fWorkloop = nullptr;
+	fCommandGate = nullptr;
+	fItlWm = nullptr;
 
 	authtype_upper = 0;
 	authtype_lower = 0;
@@ -44,6 +49,14 @@ void Black80211Control::free() {
     
     ReleaseAll();
     super::free();
+}
+
+bool Black80211Control::useAppleRSNSupplicant(IO80211Interface *interface) {
+	return false;
+}
+
+bool Black80211Control::useAppleRSNSupplicant(IO80211VirtualInterface *interface) {
+	return false;
 }
 
 IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
@@ -65,15 +78,36 @@ IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
 		IOLog("Black80211: failed to find itlwm\n");
 		return NULL;
 	}
-
-	itlwm_set_controller(fItlWm, this);
+	fItlWm->retain();
 
     return this;
 }
 
+IONetworkInterface *Black80211Control::createInterface() {
+	auto *interface = new Black80211Interface;
+	if (interface == NULL)
+		return NULL;
+	if (!interface->init(this)) {
+		interface->release();
+		return NULL;
+	}
+	interface->setProperty(kIOBuiltin, true);
+	return interface;
+}
+
 bool Black80211Control::createWorkLoop() {
-    if(!fWorkloop) {
+	if(!fWorkloop) {
+		if (fItlWm) {
+			fWorkloop = fItlWm->getWorkLoop();
+			if (fWorkloop)
+				fWorkloop->retain();
+		}
+		/*
         fWorkloop = IO80211WorkLoop::workLoop();
+		uint64_t interval;
+		nanoseconds_to_absolutetime(30000000000ull, &interval);
+		fWorkloop->setMaximumLockTime(interval, IOWorkLoop::kTimeLockPanics);
+		 */
     }
     
     return (fWorkloop != NULL);
@@ -83,6 +117,8 @@ IOWorkLoop* Black80211Control::getWorkLoop() const {
     return fWorkloop;
 }
 
+extern IOCommandGate *itlwm_getCommandGate();
+
 bool Black80211Control::start(IOService* provider) {
     IOLog("Black80211: Start\n");
     if (!super::start(provider)) {
@@ -91,6 +127,8 @@ bool Black80211Control::start(IOService* provider) {
         return false;
     }
 
+	itlwm_set_controller(fItlWm, this);
+
     //fWorkloop = (IO80211WorkLoop *)getWorkLoop();
     if (!fWorkloop) {
         IOLog("Black80211: Failed to get workloop!\n");
@@ -98,13 +136,16 @@ bool Black80211Control::start(IOService* provider) {
         return false;
     }
     
-    fCommandGate = IOCommandGate::commandGate(this);
+	fCommandGate = itlwm_getCommandGate(); //IOCommandGate::commandGate(this);
     if (!fCommandGate) {
         IOLog("Black80211: Failed to create command gate!\n");
         ReleaseAll();
         return false;
     }
-    
+	fCommandGate->retain();
+
+	/*
+	 // This is already done by itlwm
     if (fWorkloop->addEventSource(fCommandGate) != kIOReturnSuccess) {
         IOLog("Black80211: Failed to register command gate event source!\n");
         ReleaseAll();
@@ -112,7 +153,16 @@ bool Black80211Control::start(IOService* provider) {
     }
     
     fCommandGate->enable();
-    
+	*/
+	fTimerEventSource = IOTimerEventSource::timerEventSource(this);
+	if (!fTimerEventSource) {
+		IOLog("Black80211: Failed to create timer event source!\n");
+		ReleaseAll();
+		return false;
+	}
+
+	fWorkloop->addEventSource(fTimerEventSource);
+
     mediumDict = OSDictionary::withCapacity(MEDIUM_TYPE_INVALID + 1);
     addMediumType(kIOMediumIEEE80211None,  0,  MEDIUM_TYPE_NONE);
     addMediumType(kIOMediumIEEE80211Auto,  0,  MEDIUM_TYPE_AUTO);
@@ -153,7 +203,8 @@ bool Black80211Control::start(IOService* provider) {
         return false;
     }
 
-	((uint8_t*)fInterface)[0x160] &= ~2; // disable use of Apple RSN supplicant
+	//((uint8_t*)fInterface)[0x160] &= ~2; // disable use of Apple RSN supplicant
+	//((uint64_t*)fInterface)[0x280] = 0xffffffffffffffffull; // ffffull debug!
 
 	attach(fItlWm);
 	itlwm_set_interface(fItlWm, fInterface);
@@ -171,14 +222,25 @@ UInt64                  speed,
 OSData *                data) {
 	if (!fInterface)
 		return false;
-	return super::setLinkStatus(status, activeMedium, speed, data);
+	IOLog("Changing link status: %d\n", status);
+	bool ret = super::setLinkStatus(status, activeMedium, speed, data);
+	if (status & kIONetworkLinkValid && status & kIONetworkLinkActive) {
+		fInterface->setLinkState(kIO80211NetworkLinkUp, 0);
+	}
+	else if (status & kIONetworkLinkValid) {
+		fInterface->setLinkState(kIO80211NetworkLinkDown, 0);
+	}
+	else {
+		fInterface->setLinkState(kIO80211NetworkLinkUndefined, 0);
+	}
+	return ret;
 }
 
 IOReturn Black80211Control::enable(IONetworkInterface* iface) {
     IOLog("Black80211: enable");
     IOMediumType mediumType = kIOMediumIEEE80211Auto;
     IONetworkMedium *medium = IONetworkMedium::getMediumWithType(mediumDict, mediumType);
-    setLinkStatus(kIONetworkLinkActive | kIONetworkLinkValid, medium);
+    setLinkStatus(kIONetworkLinkValid, medium);
     
     if(fInterface) {
         fInterface->postMessage(APPLE80211_M_POWER_CHANGED);
@@ -426,7 +488,11 @@ IO80211Interface* Black80211Control::getNetworkInterface() {
 extern UInt32 itlwm_outputPacket(IOService* self, mbuf_t m, void *param);
 
 UInt32 Black80211Control::outputPacket(mbuf_t m, void* param) {
-	return itlwm_outputPacket(fItlWm, m, param);
+	//((uint64_t*)fInterface)[0x280] = 0xffffffffffffffffull; // ffffull debug!
+	IOLog("outputPacket begin\n");
+	UInt32 ret = itlwm_outputPacket(fItlWm, m, param);
+	IOLog("outputPacket end %d\n", ret);
+	return ret;
 }
 
 IOReturn Black80211Control::getMaxPacketSize( UInt32* maxSize ) const {

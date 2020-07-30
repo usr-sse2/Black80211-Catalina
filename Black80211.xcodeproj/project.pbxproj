@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		358C6ABA24D15CBF008A4FBD /* Black80211Interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 358C6AB824D15CBF008A4FBD /* Black80211Interface.cpp */; };
+		358C6ABB24D15CBF008A4FBD /* Black80211Interface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 358C6AB924D15CBF008A4FBD /* Black80211Interface.hpp */; };
 		6811BAE023E36DB00004FF34 /* IONetworkController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD623E36DB00004FF34 /* IONetworkController.h */; };
 		6811BAE123E36DB00004FF34 /* IOSkywalkEthernetInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD723E36DB00004FF34 /* IOSkywalkEthernetInterface.h */; };
 		6811BAE223E36DB00004FF34 /* IO80211Interface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD823E36DB00004FF34 /* IO80211Interface.h */; };
@@ -30,6 +32,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		358C6AB824D15CBF008A4FBD /* Black80211Interface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Black80211Interface.cpp; sourceTree = "<group>"; };
+		358C6AB924D15CBF008A4FBD /* Black80211Interface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Black80211Interface.hpp; sourceTree = "<group>"; };
 		6811BAD623E36DB00004FF34 /* IONetworkController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IONetworkController.h; sourceTree = "<group>"; };
 		6811BAD723E36DB00004FF34 /* IOSkywalkEthernetInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSkywalkEthernetInterface.h; sourceTree = "<group>"; };
 		6811BAD823E36DB00004FF34 /* IO80211Interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IO80211Interface.h; sourceTree = "<group>"; };
@@ -123,6 +127,8 @@
 				A61272292039FD13009DD95B /* Info.plist */,
 				A635043B209A3CC700C82B59 /* apple80211.h */,
 				A688015320EDA58B00590651 /* debug.h */,
+				358C6AB824D15CBF008A4FBD /* Black80211Interface.cpp */,
+				358C6AB924D15CBF008A4FBD /* Black80211Interface.hpp */,
 			);
 			path = Black80211;
 			sourceTree = "<group>";
@@ -153,6 +159,7 @@
 				6811BAE323E36DB00004FF34 /* IO80211Controller.h in Headers */,
 				6863648523E36CDF00549C37 /* Black80211Control.hpp in Headers */,
 				6811BAE523E36DB00004FF34 /* apple80211_var.h in Headers */,
+				358C6ABB24D15CBF008A4FBD /* Black80211Interface.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,6 +305,7 @@
 			files = (
 				6863647723E36CDF00549C37 /* Black80211Control.cpp in Sources */,
 				6863647823E36CDF00549C37 /* Black80211Control_ioctl.cpp in Sources */,
+				358C6ABA24D15CBF008A4FBD /* Black80211Interface.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -325,6 +333,7 @@
 		6863648B23E36CDF00549C37 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/Catalina/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				CURRENT_PROJECT_VERSION = 1.0.0d1;
@@ -350,6 +359,7 @@
 		6863648C23E36CDF00549C37 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/Catalina/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				CURRENT_PROJECT_VERSION = 1.0.0d1;
@@ -379,8 +389,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -437,8 +446,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
@@ -486,7 +494,6 @@
 		A612722D2039FD13009DD95B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/Sierra/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				CURRENT_PROJECT_VERSION = 1.0.0d1;
@@ -511,7 +518,6 @@
 		A612722E2039FD13009DD95B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/Sierra/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				CURRENT_PROJECT_VERSION = 1.0.0d1;

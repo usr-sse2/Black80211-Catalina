@@ -113,6 +113,12 @@ public:
 							   const IONetworkMedium * activeMedium = 0,
 							   UInt64                  speed        = 0,
 							   OSData *                data         = 0) override;
+
+	virtual IONetworkInterface * createInterface() override;
+
+	virtual bool useAppleRSNSupplicant(IO80211Interface* interface) override;
+	virtual bool useAppleRSNSupplicant(IO80211VirtualInterface* interface) override;
+
 protected:
     IO80211Interface* getInterface();
     
@@ -195,23 +201,24 @@ private:
     
     
     inline void ReleaseAll() {
-        OSSafeReleaseNULL(fOutputQueue);
         OSSafeReleaseNULL(fCommandGate);
         OSSafeReleaseNULL(fWorkloop);
         OSSafeReleaseNULL(mediumDict);
         OSSafeReleaseNULL(fWorkloop);
+		OSSafeReleaseNULL(fTimerEventSource);
     }
     
     bool addMediumType(UInt32 type, UInt32 speed, UInt32 code, char* name = 0);
+	static void postScanningDoneMessage(OSObject* self, ...);
 public:
 	interop_scan_result* scan_result;
 	apple80211_scan_result* prevResult;
     
-    IO80211WorkLoop* fWorkloop;
+    IOWorkLoop* fWorkloop;
     IO80211Interface* fInterface;
-    IOGatedOutputQueue* fOutputQueue;
     IOCommandGate* fCommandGate;
 	IOService* fItlWm;
+	IOTimerEventSource* fTimerEventSource;
     
 	size_t networkIndex = 0;
 

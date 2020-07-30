@@ -128,7 +128,7 @@ class IO80211Controller : public IOEthernetController {
     
 public:
     
-    virtual void requestPacketTx(void*, uint) {}
+	virtual void requestPacketTx(void*, uint);
     
     virtual IOReturn getHardwareAddressForInterface(IO80211Interface *,IOEthernetAddress *);
     virtual void inputMonitorPacket(mbuf_t,uint,void *,ulong);
@@ -136,13 +136,9 @@ public:
     
     virtual int outputActionFrame(IO80211Interface *,mbuf_t);
     
-    virtual int bpfOutputPacket(OSObject *,uint,mbuf_t) {
-        return 0;
-    }
+	virtual int bpfOutputPacket(OSObject *,uint,mbuf_t);
     
-    virtual SInt32 monitorModeSetEnabled(IO80211Interface*, bool, uint) {
-        return 0;
-    }
+	virtual SInt32 monitorModeSetEnabled(IO80211Interface*, bool, uint);
     
     virtual IO80211Interface* getNetworkInterface(void);
     
@@ -151,16 +147,11 @@ public:
     virtual SInt32 apple80211_ioctl(IO80211Interface *, IO80211VirtualInterface*, ifnet_t,ulong,void *);
     virtual SInt32 apple80211_ioctl(IO80211SkywalkInterface *,ulong,void *);
     
-    virtual SInt32 apple80211_ioctl(IO80211Interface *, ifnet_t,ulong id,void *) {
-		IOLog("Black80211: ioctl called with %lx", id);
-        return 0;
-    }
+	virtual SInt32 apple80211_ioctl(IO80211Interface *, ifnet_t,ulong id,void *) { return 0; };
     
     virtual SInt32 apple80211Request(unsigned int, int, IO80211Interface*, void*) = 0;
     
-    virtual SInt32 apple80211VirtualRequest(uint,int,IO80211VirtualInterface *,void *) {
-        return kIOReturnSuccess;
-    }
+	virtual SInt32 apple80211VirtualRequest(uint,int,IO80211VirtualInterface *,void *);
     
     virtual SInt32 apple80211SkywalkRequest(uint,int,IO80211SkywalkInterface *,void *);
     virtual SInt32 stopDMA() { return 0x66; };
@@ -169,18 +160,10 @@ public:
     virtual bool useAppleRSNSupplicant(IO80211Interface *);
     virtual bool useAppleRSNSupplicant(IO80211VirtualInterface *);
     virtual void dataLinkLayerAttachComplete(IO80211Interface *);
-    virtual SInt32 enableFeature(IO80211FeatureCode, void*) { return 0; };
-    virtual SInt32 setVirtualHardwareAddress(IO80211VirtualInterface *,ether_addr *) {
-        return kIOReturnSuccess;
-    }
-    virtual SInt32 enableVirtualInterface(IO80211VirtualInterface *)
-    {
-        return kIOReturnSuccess;
-    };
-    virtual SInt32 disableVirtualInterface(IO80211VirtualInterface *)
-    {
-        return kIOReturnSuccess;
-    };
+	virtual SInt32 enableFeature(IO80211FeatureCode, void*) { return 0; };
+	virtual SInt32 setVirtualHardwareAddress(IO80211VirtualInterface *,ether_addr *);
+    virtual SInt32 enableVirtualInterface(IO80211VirtualInterface *);
+    virtual SInt32 disableVirtualInterface(IO80211VirtualInterface *);
     
     virtual bool requiresExplicitMBufRelease() { return false; };
     virtual bool flowIdSupported() { return false; };
@@ -215,9 +198,7 @@ public:
     virtual bool attachInterface(IOSkywalkInterface *,IOService *);
     
     
-    virtual IO80211VirtualInterface* createVirtualInterface(ether_addr *,uint) {
-        return NULL;
-    }
+	virtual IO80211VirtualInterface* createVirtualInterface(ether_addr *,uint);
     virtual bool attachVirtualInterface(IO80211VirtualInterface **,ether_addr *,uint,bool);
     virtual bool detachVirtualInterface(IO80211VirtualInterface *,bool);
     
@@ -240,16 +221,10 @@ public:
     }
  */
     
-    IO80211SkywalkInterface* getInfraInterface(void) {
-        return NULL;
-    }
-    IO80211ScanManager* getPrimaryInterfaceScanManager(void) {
-        return NULL;
-    }
+	IO80211SkywalkInterface* getInfraInterface(void);
+	IO80211ScanManager* getPrimaryInterfaceScanManager(void);
     
-    IO80211ControllerMonitor* getInterfaceMonitor(void) {
-        return NULL;
-    }
+	IO80211ControllerMonitor* getInterfaceMonitor(void);
     
     
     IOReturn addReporterLegend(IOService *,IOReporter *,char const*,char const*);
@@ -266,20 +241,13 @@ public:
     void setIOReportersStreamLevel(CCStreamLogLevel);
 
 
-    void powerChangeGated(OSObject *,void *,void *,void *,void *) {};
-    int copyOut(void const*,ulong long,ulong) {
-        return 0;
-    }
+    void powerChangeGated(OSObject *,void *,void *,void *,void *);
+	int copyOut(void const*,ulong long,ulong);
     
     //modified
     
     
-    SInt32 getASSOCIATE_RESULT(IO80211Interface *,IO80211VirtualInterface *,IO80211SkywalkInterface *,apple80211_assoc_result_data * assoc_result) {
-		IOLog("o_O this is called");
-		assoc_result->version = APPLE80211_VERSION;
-		assoc_result->result = APPLE80211_RESULT_SUCCESS;
-        return kIOReturnSuccess;
-    }
+	SInt32 getASSOCIATE_RESULT(IO80211Interface *,IO80211VirtualInterface *,IO80211SkywalkInterface *,apple80211_assoc_result_data * assoc_result);
     virtual int errnoFromReturn(int) override;
     virtual const char* stringFromReturn(int) override;
     
@@ -297,9 +265,7 @@ public:
     //virtual SInt32 apple
     
      
-    virtual IOReturn outputStart(IONetworkInterface *,uint) {
-        return kIOReturnSuccess;
-    }
+	virtual IOReturn outputStart(IONetworkInterface *,uint);
     
     /*
     virtual IOReturn setChanNoiseFloorLTE(apple80211_stat_report *,int) {
@@ -352,75 +318,46 @@ public:
     }
      */
 
-    IOReturn copyIn(ulong long,void *,ulong) {
-        return kIOReturnUnsupported;
-    }
-    void logIOCTL(apple80211req *) {};
-    bool isIOCTLLoggingRestricted(apple80211req *) {
-        return false;
-    }
+	IOReturn copyIn(ulong long,void *,ulong);
+    void logIOCTL(apple80211req *);
+	bool isIOCTLLoggingRestricted(apple80211req *);
 
-    bool getBeaconPeriod(apple80211_beacon_period_data *) {
-        return false;
-    }
-    SInt32 apple80211VirtualRequestIoctl(uint,int,IO80211VirtualInterface *,void *) {
-        return kIOReturnUnsupported;
-    }
-    bool getBSSIDData(OSObject *,apple80211_bssid_data *) {
-        return false;
-    }
-    bool getSSIDData(apple80211_ssid_data *) {
-        return false;
-        
-    }
-    bool inputInfraPacket(mbuf_t) {
-        return false;
-    }
-    void notifyHostapState(apple80211_hostap_state *) {};
-    bool isAwdlAssistedDiscoveryEnabled(void) {
-        return false;
-    }
-    void joinDone(scanSource,joinStatus) {};
-    void joinStarted(scanSource,joinStatus) {};
-    void handleChannelSwitchAnnouncement(apple80211_channel_switch_announcement *) {};
-    void scanDone(scanSource,int) {};
-    void scanStarted(scanSource,apple80211_scan_data *) {};
-    void printChannels(void) {};
-    void updateInterfaceCoexRiskPct(ulong long) {};
-    SInt32 getInfraChannel(apple80211_channel_data *) {
-        return kIOReturnUnsupported;
-    }
+	bool getBeaconPeriod(apple80211_beacon_period_data *);
+	SInt32 apple80211VirtualRequestIoctl(uint,int,IO80211VirtualInterface *,void *);
+	bool getBSSIDData(OSObject *,apple80211_bssid_data *);
+	bool getSSIDData(apple80211_ssid_data *);
+	bool inputInfraPacket(mbuf_t);
+    void notifyHostapState(apple80211_hostap_state *);
+	bool isAwdlAssistedDiscoveryEnabled(void);
+    void joinDone(scanSource,joinStatus);
+    void joinStarted(scanSource,joinStatus);
+    void handleChannelSwitchAnnouncement(apple80211_channel_switch_announcement *);
+    void scanDone(scanSource,int);
+    void scanStarted(scanSource,apple80211_scan_data *);
+    void printChannels(void);
+    void updateInterfaceCoexRiskPct(ulong long);
+	SInt32 getInfraChannel(apple80211_channel_data *);
     void calculateInterfacesAvaiability(void);//怀疑对象，之前是返回int
-    void setChannelSequenceList(apple80211_awdl_sync_channel_sequence *) {};//怀疑对象，之前是返回int
-    void setPrimaryInterfaceDatapathState(bool) {};
-    UInt32 getPrimaryInterfaceLinkState(void) {
-        return kIOReturnSuccess;
-    }
+    void setChannelSequenceList(apple80211_awdl_sync_channel_sequence *);//怀疑对象，之前是返回int
+    void setPrimaryInterfaceDatapathState(bool);
+	UInt32 getPrimaryInterfaceLinkState(void);
     void setCurrentChannel(apple80211_channel *);//怀疑对象，之前是返回int
-    void setHtCapability(ieee80211_ht_capability_ie *) {};
+    void setHtCapability(ieee80211_ht_capability_ie *);
     UInt32 getHtCapability(void);
     UInt32 getHtCapabilityLength(void);
-    bool io80211isDebuggable(bool* enable) {
-        *enable = true;
-        return true;
-    }
+	bool io80211isDebuggable(bool* enable);
     void logDebug(ulong long,char const*,...);//怀疑对象，之前是返回int
     void vlogDebug(ulong long,char const*,va_list);//怀疑对象，之前是返回char
     void logDebug(char const*,...);//怀疑对象，之前是返回int
 
-    bool calculateInterfacesCoex(void) {
-        return false;
-    }
-    void setInfraChannel(apple80211_channel *) {
-    }
+	bool calculateInterfacesCoex(void);
+	void setInfraChannel(apple80211_channel *);
 
-    void configureAntennae(void) {};
+    void configureAntennae(void);
     SInt32 apple80211RequestIoctl(uint,int,IO80211Interface *,void *);
     UInt32 radioCountForInterface(IO80211Interface *);
     void releaseIOReporters(void);
-    bool findAndAttachToFaultReporter(void) {
-        return false;
-    }
+	bool findAndAttachToFaultReporter(void);
     UInt32 setupControlPathLogging(void);
     IOReturn createIOReporters(IOService *);
     IOReturn powerChangeHandler(void *,void *,uint,IOService *,void *,ulong);

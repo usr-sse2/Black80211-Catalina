@@ -46,9 +46,16 @@ extern void itlwm_set_wpa_key(IOService* self, const u_int8_t *key, size_t key_l
 #define kIOMessageScanComplete iokit_vendor_specific_msg(2)
 
 IOReturn Black80211Control::message(UInt32 type, IOService *provider, void *argument) {
+	IOLog("%s: %d TYPE=%d\n", __PRETTY_FUNCTION__, __LINE__, type);
+	/*IOReturn ret = fCommandGate->runAction([](OSObject *target, void* arg0, void* arg1, void* arg2, void* arg3) -> IOReturn {
+		auto self = (Black80211Control*)arg0;
+		auto type = *(UInt32*)arg1;
+		IOLog("%s: %d\n", __PRETTY_FUNCTION__, __LINE__);*/
 	switch (type) {
 		case kIOMessageNetworkChanged:
 			fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
+			//self->fInterface->postMessage(APPLE80211_M_LINK_CHANGED);
+			IOLog("%s: success\n", __PRETTY_FUNCTION__);
 			return kIOReturnSuccess;
 		case kIOMessageScanComplete:
 			if (requestedScanning) {
@@ -56,11 +63,20 @@ IOReturn Black80211Control::message(UInt32 type, IOService *provider, void *argu
 				networkIndex = 0;
 				scan_result = itlwm_get_scan_result(fItlWm);
 				IOLog("Black80211: Scanning complete, found %lu networks\n", scan_result->count);
-				fInterface->postMessage(APPLE80211_M_SCAN_DONE);
+				// Try to send but don't deadlock
+				fCommandGate->attemptAction([](OSObject *target, void* arg0, void* arg1, void* arg2, void* arg3) {
+					((IO80211Interface*)arg0)->postMessage(APPLE80211_M_SCAN_DONE);
+					return kIOReturnSuccess;
+				}, fInterface);
 			}
+			IOLog("%s: success\n", __PRETTY_FUNCTION__);
 			return kIOReturnSuccess;
 	}
+	IOLog("%s: unsupported\n", __PRETTY_FUNCTION__);
 	return kIOReturnUnsupported;
+	/*}, this, &type, provider, argument);
+	IOLog("%s: %d RET= %d\n", __PRETTY_FUNCTION__, __LINE__, ret);
+	return ret;*/
 }
 
 //
@@ -240,7 +256,7 @@ static IOReturn scanAction(OSObject *target, void *arg0, void *arg1, void *arg2,
 		channels[i] = sd.channels[i].channel;
 	}
 
-	return itlwm_bgscan(controller->fItlWm, channels, sd.num_channels, (const char*)sd.ssid, sd.ssid_len);
+	return itlwm_bgscan(controller->fItlWm, channels, 0 /*sd.num_channels*/, (const char*)sd.ssid, sd.ssid_len);
 }
 
 //
@@ -283,11 +299,13 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 	uint8_t *b = sd->bssid.octet;
 	IOLog("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\n", b[0], b[1], b[2], b[3], b[4], b[5]);
 
-	if (sd->scan_type == APPLE80211_SCAN_TYPE_FAST) {
+	if (sd->scan_type == APPLE80211_SCAN_TYPE_FAST ||
+		(sd->num_channels != 0 && sd->channels[0].channel != 1)) {
 	  IOLog("Reporting previous scan result\n");
 	  networkIndex = 0;
-	  scan_result = itlwm_get_scan_result(fItlWm);
-	  interface->postMessage(APPLE80211_M_SCAN_DONE);
+	  //scan_result = itlwm_get_scan_result(fItlWm);
+		fTimerEventSource->setAction(&Black80211Control::postScanningDoneMessage);
+		fTimerEventSource->setTimeoutMS(200);
 	  return kIOReturnSuccess;
 	}
 
@@ -295,6 +313,11 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 	if (status != kIOReturnSuccess)
 		requestedScanning = false;
 	return status;
+}
+
+void Black80211Control::postScanningDoneMessage(OSObject* self,  ...) {
+	Black80211Control* controller = (Black80211Control*)self;
+	controller->fInterface->postMessage(APPLE80211_M_SCAN_DONE);
 }
 
 IOReturn Black80211Control::setSCAN_REQ_MULTIPLE(
