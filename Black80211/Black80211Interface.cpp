@@ -13,8 +13,5 @@
 OSDefineMetaClassAndStructors(Black80211Interface, IO80211Interface);
 
 UInt32 Black80211Interface::inputPacket(mbuf_t packet, UInt32 length, IOOptionBits options, void *param) {
-	IOLog("%s begin\n", __PRETTY_FUNCTION__);
-	UInt32 ret = IONetworkInterface::inputPacket(packet, length, options, param);
-	IOLog("%s end\n", __PRETTY_FUNCTION__);
-	return ret;
+	return IONetworkInterface::inputPacket(packet, length, options, param);
 }

@@ -256,7 +256,7 @@ static IOReturn scanAction(OSObject *target, void *arg0, void *arg1, void *arg2,
 		channels[i] = sd.channels[i].channel;
 	}
 
-	return itlwm_bgscan(controller->fItlWm, channels, 0 /*sd.num_channels*/, (const char*)sd.ssid, sd.ssid_len);
+	return itlwm_bgscan(controller->fItlWm, channels, sd.num_channels, (const char*)sd.ssid, sd.ssid_len);
 }
 
 //
@@ -300,12 +300,12 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 	IOLog("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\n", b[0], b[1], b[2], b[3], b[4], b[5]);
 
 	if (sd->scan_type == APPLE80211_SCAN_TYPE_FAST ||
-		(sd->num_channels != 0 && sd->channels[0].channel != 1)) {
+		(itlwm_get_state(fItlWm) != APPLE80211_S_RUN && sd->num_channels != 0 && sd->channels[0].channel != 1)) {
 	  IOLog("Reporting previous scan result\n");
 	  networkIndex = 0;
 	  //scan_result = itlwm_get_scan_result(fItlWm);
 		fTimerEventSource->setAction(&Black80211Control::postScanningDoneMessage);
-		fTimerEventSource->setTimeoutMS(200);
+		fTimerEventSource->setTimeoutUS(1);
 	  return kIOReturnSuccess;
 	}
 
@@ -329,41 +329,6 @@ IO80211Interface *interface, struct apple80211_scan_multiple_data *sd) {
 //
 // MARK: 11 - SCAN_RESULT
 //
-
-/*
-undefined8 __thiscall
-getSCAN_RESULT(AirPort_BrcmNIC *this,OSObject *param_1,apple80211_scan_result **param_2)
-
-{
-  undefined8 uVar1;
-
-  if (*(int *)(this + 0x19f8) == 0) {
-    uVar1 = 0x10;
-  }
-  else {
-    if (*(int *)(this + 0x19f8) < 0) {
-      uVar1 = 0xc;
-    }
-    else {
-      if (param_2 == (apple80211_scan_result **)0x0) {
-        uVar1 = 0x16;
-      }
-      else {
-        if (*(long *)(this + 0x1a10) == 0) {
-          uVar1 = 5;
-        }
-        else {
-          *param_2 = (apple80211_scan_result *)(*(long *)(this + 0x1a10) + 8);
-          *(undefined8 *)(this + 0x1a10) = **(undefined8 **)(this + 0x1a10);
-          uVar1 = 0;
-        }
-      }
-    }
-  }
-  return uVar1;
-}
- */
-
 
 IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
                                            struct apple80211_scan_result **sr) {

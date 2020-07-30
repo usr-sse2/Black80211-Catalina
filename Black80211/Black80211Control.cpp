@@ -489,9 +489,7 @@ extern UInt32 itlwm_outputPacket(IOService* self, mbuf_t m, void *param);
 
 UInt32 Black80211Control::outputPacket(mbuf_t m, void* param) {
 	//((uint64_t*)fInterface)[0x280] = 0xffffffffffffffffull; // ffffull debug!
-	IOLog("outputPacket begin\n");
 	UInt32 ret = itlwm_outputPacket(fItlWm, m, param);
-	IOLog("outputPacket end %d\n", ret);
 	return ret;
 }
 
