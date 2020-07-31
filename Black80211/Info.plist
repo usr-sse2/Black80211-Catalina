@@ -31,7 +31,7 @@
 			<key>IOClass</key>
 			<string>Black80211Control</string>
 			<key>IOProviderClass</key>
-			<string>IOResources</string>
+			<string>itlwm</string>
 		</dict>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
@@ -55,5 +55,7 @@
 		<key>com.apple.kpi.mach</key>
 		<string>16.7</string>
 	</dict>
+	<key>OSBundleRequired</key>
+	<string>Network-Root</string>
 </dict>
 </plist>

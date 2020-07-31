@@ -65,21 +65,16 @@ IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
     if (!super::probe(provider, score))
 		return NULL;
 
-	OSDictionary *matchingDict = IOService::nameMatching("itlwm");
-	if (!matchingDict) {
-		IOLog("Black80211: failed to create matching dict\n");
-		return NULL;
-	}
-
-	fItlWm = OSDynamicCast(IOService, provider->waitForMatchingService(matchingDict));
-	OSSafeReleaseNULL(matchingDict);
+	fItlWm = OSDynamicCast(IOService, provider);
 
 	if (!fItlWm) {
 		IOLog("Black80211: failed to find itlwm\n");
 		return NULL;
 	}
 	fItlWm->retain();
-
+	
+	itlwm_set_controller(fItlWm, this);
+	
     return this;
 }
 
@@ -102,12 +97,6 @@ bool Black80211Control::createWorkLoop() {
 			if (fWorkloop)
 				fWorkloop->retain();
 		}
-		/*
-        fWorkloop = IO80211WorkLoop::workLoop();
-		uint64_t interval;
-		nanoseconds_to_absolutetime(30000000000ull, &interval);
-		fWorkloop->setMaximumLockTime(interval, IOWorkLoop::kTimeLockPanics);
-		 */
     }
     
     return (fWorkloop != NULL);
@@ -126,9 +115,7 @@ bool Black80211Control::start(IOService* provider) {
         ReleaseAll();
         return false;
     }
-
-	itlwm_set_controller(fItlWm, this);
-
+	
     //fWorkloop = (IO80211WorkLoop *)getWorkLoop();
     if (!fWorkloop) {
         IOLog("Black80211: Failed to get workloop!\n");
@@ -144,16 +131,6 @@ bool Black80211Control::start(IOService* provider) {
     }
 	fCommandGate->retain();
 
-	/*
-	 // This is already done by itlwm
-    if (fWorkloop->addEventSource(fCommandGate) != kIOReturnSuccess) {
-        IOLog("Black80211: Failed to register command gate event source!\n");
-        ReleaseAll();
-        return false;
-    }
-    
-    fCommandGate->enable();
-	*/
 	fTimerEventSource = IOTimerEventSource::timerEventSource(this);
 	if (!fTimerEventSource) {
 		IOLog("Black80211: Failed to create timer event source!\n");
@@ -488,9 +465,7 @@ IO80211Interface* Black80211Control::getNetworkInterface() {
 extern UInt32 itlwm_outputPacket(IOService* self, mbuf_t m, void *param);
 
 UInt32 Black80211Control::outputPacket(mbuf_t m, void* param) {
-	//((uint64_t*)fInterface)[0x280] = 0xffffffffffffffffull; // ffffull debug!
-	UInt32 ret = itlwm_outputPacket(fItlWm, m, param);
-	return ret;
+	return itlwm_outputPacket(fItlWm, m, param);
 }
 
 IOReturn Black80211Control::getMaxPacketSize( UInt32* maxSize ) const {
