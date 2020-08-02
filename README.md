@@ -14,7 +14,7 @@ The following actions already work:
 - Turning Wi-Fi off and on
 - Scanning networks (this also allows Location Services to detect location)
 
-[!maps](Maps.png)
+![maps](Maps.png)
 
 - Connecting to Open, WEP Open System and WPA2 Personal networks using entered password
 
