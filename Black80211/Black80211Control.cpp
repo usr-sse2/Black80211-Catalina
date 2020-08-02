@@ -60,7 +60,7 @@ IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
     if (!super::probe(provider, score))
 		return NULL;
 
-	fProvider = OSDynamicCast(Black80211Device, provider);
+	fProvider = (Black80211Device*)provider->metaCast("Black80211Device");
 
 	if (!fProvider) {
 		IOLog("Black80211: failed to find itlwm\n");
