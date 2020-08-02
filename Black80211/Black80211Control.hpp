@@ -24,6 +24,8 @@
 
 #include <IOKit/network/IOGatedOutputQueue.h>
 
+#include "interop.h"
+
 #include "apple80211.h"
 
 typedef enum {
@@ -36,33 +38,6 @@ typedef enum {
     MEDIUM_TYPE_54MBIT,
     MEDIUM_TYPE_INVALID
 } mediumType_t;
-
-
-struct NetworkInformation {
-	u_int8_t		essid[APPLE80211_MAX_SSID_LEN];
-	u_int8_t		bssid[APPLE80211_ADDR_LEN];
-	u_int8_t		rssi;
-	u_int16_t		capabilities;
-	u_int16_t		beacon_interval;
-	u_int32_t		timestamp;
-	u_int8_t		*rsn_ie;
-	int 			channel;
-};
-
-
-class ScanResult : public OSObject {
-	OSDeclareDefaultStructors(ScanResult)
-	
-public:
-	virtual bool init() override;
-	virtual void free() override;
-
-	static ScanResult* scanResult();
-	
-	size_t count;
-	NetworkInformation *networks;
-};
-
 
 class Black80211Control : public IO80211Controller {
     
@@ -206,7 +181,7 @@ public:
     IOWorkLoop* fWorkloop;
     IO80211Interface* fInterface;
     IOCommandGate* fCommandGate;
-	IOService* fItlWm;
+	Black80211Device* fProvider;
 	IOTimerEventSource* fTimerEventSource;
     
 	size_t networkIndex = 0;
