@@ -13,11 +13,9 @@ const char *fake_hw_version = "Hardware 1.0";
 const char *fake_drv_version = "Driver 1.0";
 const char *fake_country_code = "RU";
 
-#define CHANNELS
-
 extern void itlwm_enable(IOService *itlwm);
 extern void itlwm_disable(IOService *itlwm);
-extern interop_scan_result* itlwm_get_scan_result(IOService *itlwm);
+extern ScanResult* itlwm_get_scan_result(IOService *itlwm);
 extern void itlwm_associate(IOService *self);
 extern void itlwm_disassociate(IOService *self);
 extern IOReturn itlwm_bgscan(IOService *self, uint8_t* channels, uint32_t length, const char* ssid, uint32_t ssid_len);
@@ -180,11 +178,7 @@ IOReturn Black80211Control::getCHANNEL(IO80211Interface *interface,
 
 	cd->version = APPLE80211_VERSION;
     cd->channel.version = APPLE80211_VERSION;
-#ifdef CHANNELS
 	cd->channel.channel = itlwm_get_channel(fItlWm);
-#else
-	cd->channel.channel = 1;
-#endif
 	cd->channel.flags = channelFlags(cd->channel.channel);
     return kIOReturnSuccess;
 }
@@ -349,31 +343,15 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 		return 0x10;
 	}
 
-	//if (prevResult != nullptr) {
-	//	if (prevResult->asr_ie_data != nullptr)
-	//		IOFree(prevResult->asr_ie_data, prevResult->asr_ie_len);
-	//	IOFree(prevResult, sizeof(struct apple80211_scan_result));
-	//	prevResult = nullptr;
-	//}
-
 	for ( ; networkIndex < scan_result->count; networkIndex++) {
-		interop_scan_result_network *network = &scan_result->networks[networkIndex];
-
-		/*
-		if (network->ni_rssi < 25) // disable weak networks
-			continue;
-
-		if (network->ni_essid[0] == 0) // disable hidden networks
-			continue;
-		 */
+		auto *network = &scan_result->networks[networkIndex];
 
 		bool requested = true;
-#ifdef CHANNELS
 		// itlwm reports current network even when its channel is not requested
 		if (requestIsMulti && multiRequest.num_channels > 0) {
 			requested = false;
 			for (int i = 0; i < multiRequest.num_channels; i++)
-				if (multiRequest.channels[i].channel == network->ni_channel) {
+				if (multiRequest.channels[i].channel == network->channel) {
 					requested = true;
 					break;
 				}
@@ -381,7 +359,7 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 		else if (!requestIsMulti && request.num_channels > 0) {
 			requested = false;
 			for (int i = 0; i < request.num_channels; i++)
-				if (request.channels[i].channel == network->ni_channel) {
+				if (request.channels[i].channel == network->channel) {
 					requested = true;
 					break;
 				}
@@ -389,23 +367,22 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 
 		if (!requested)
 			continue;
-#endif
 
 		if (requestIsMulti && multiRequest.ssid_count > 0) {
 			requested = false;
 			for (int i = 0; i < multiRequest.ssid_count; i++) {
-				size_t ssid_len = strnlen((const char*)network->ni_essid, 32);
+				size_t ssid_len = strnlen((const char*)network->essid, 32);
 				if (ssid_len != multiRequest.ssids[i].ssid_len)
 					continue;
 
-				if (!strncmp((const char*)multiRequest.ssids[i].ssid_bytes, (const char*)network->ni_essid, ssid_len)) {
+				if (!strncmp((const char*)multiRequest.ssids[i].ssid_bytes, (const char*)network->essid, ssid_len)) {
 					requested = true;
 					break;
 				}
 			}
 		}
 		else if (!requestIsMulti && request.ssid_len > 0) {
-			requested = strnlen((const char*)network->ni_essid, 32) == request.ssid_len && !strncmp((const char*)network->ni_essid, (const char*)request.ssid, 32);
+			requested = strnlen((const char*)network->essid, 32) == request.ssid_len && !strncmp((const char*)network->essid, (const char*)request.ssid, 32);
 		}
 
 		if (!requested)
@@ -419,47 +396,43 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 		result->version = APPLE80211_VERSION;
 
 		result->asr_channel.version = APPLE80211_VERSION;
-#ifdef CHANNELS
-		result->asr_channel.channel = network->ni_channel;
-#else
-		result->asr_channel.channel = 1;
-#endif
+		result->asr_channel.channel = network->channel;
 		result->asr_channel.flags = channelFlags(result->asr_channel.channel);
 		result->asr_noise = itlwm_get_noise(fItlWm);
-		result->asr_rssi = network->ni_rssi;
-		result->asr_beacon_int = network->ni_intval;
+		result->asr_rssi = network->rssi;
+		result->asr_beacon_int = network->beacon_interval;
 
-		result->asr_cap = network->ni_capinfo;
+		result->asr_cap = network->capabilities;
 
 		result->asr_age = 0;
 
-		memcpy(result->asr_bssid, network->ni_bssid, APPLE80211_ADDR_LEN);
+		memcpy(result->asr_bssid, network->bssid, APPLE80211_ADDR_LEN);
 
 		result->asr_nrates = 1;
 		result->asr_rates[0] = 54;
 
-		IOLog("SSID: %s, channel %d\n", network->ni_essid, network->ni_channel);
-		strncpy((char*)result->asr_ssid, (const char*)network->ni_essid, APPLE80211_MAX_SSID_LEN);
-		result->asr_ssid_len = strnlen((const char*)network->ni_essid, APPLE80211_MAX_SSID_LEN);
+		IOLog("SSID: %s, channel %d\n", network->essid, network->channel);
+		strncpy((char*)result->asr_ssid, (const char*)network->essid, APPLE80211_MAX_SSID_LEN);
+		result->asr_ssid_len = strnlen((const char*)network->essid, APPLE80211_MAX_SSID_LEN);
 
-		if (network->ni_rsnie == nullptr) {
+		if (network->rsn_ie == nullptr) {
 			result->asr_ie_len = 0;
 			result->asr_ie_data = nullptr;
 		}
 		else {
-			result->asr_ie_len = 2 + network->ni_rsnie[1];
+			result->asr_ie_len = 2 + network->rsn_ie[1];
 			result->asr_ie_data = IOMalloc(result->asr_ie_len);
-			memcpy(result->asr_ie_data, network->ni_rsnie, result->asr_ie_len);
+			memcpy(result->asr_ie_data, network->rsn_ie, result->asr_ie_len);
 		}
 
 		*sr = result;
-		prevResult = result;
 
 		networkIndex++;
 		return kIOReturnSuccess;
 	}
 
 	IOLog("Reported all results\n");
+	OSSafeReleaseNULL(scan_result);
 	return 5;
 }
 
@@ -739,7 +712,6 @@ IOReturn Black80211Control::setDISASSOCIATE(IO80211Interface *interface) {
 IOReturn Black80211Control::getSUPPORTED_CHANNELS(IO80211Interface *interface,
                                                   struct apple80211_sup_channel_data *ad) {
     ad->version = APPLE80211_VERSION;
-#ifdef CHANNELS
 	channel_desc channels[APPLE80211_MAX_CHANNELS];
 	itlwm_get_supported_channels(fItlWm, ad->num_channels, channels);
 	ad->num_channels = MIN(APPLE80211_MAX_CHANNELS, ad->num_channels);
@@ -750,12 +722,6 @@ IOReturn Black80211Control::getSUPPORTED_CHANNELS(IO80211Interface *interface,
 		apple_channel.channel = ieee_channel.channel_num;
 		apple_channel.flags = ieee_channel.channel_flags;
 	}
-#else
-	ad->num_channels = 1;
-	ad->supported_channels[0].version = APPLE80211_VERSION;
-	ad->supported_channels[0].channel = 1;
-	ad->supported_channels[0].flags = APPLE80211_C_FLAG_2GHZ | APPLE80211_C_FLAG_20MHZ | APPLE80211_C_FLAG_ACTIVE;
-#endif
     return kIOReturnSuccess;
 }
 

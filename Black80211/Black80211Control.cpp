@@ -25,7 +25,6 @@ bool Black80211Control::init(OSDictionary* parameters) {
         return false;
     }
 	scan_result = nullptr;
-	prevResult = nullptr;
 
 	requestedScanning = false;
 	powerState = APPLE80211_POWER_ON;

@@ -38,39 +38,29 @@ typedef enum {
 } mediumType_t;
 
 
-enum ieee80211_cipher {
-	IEEE80211_CIPHER_NONE		= 0x00000000,
-	IEEE80211_CIPHER_USEGROUP	= 0x00000001,
-	IEEE80211_CIPHER_WEP40		= 0x00000002,
-	IEEE80211_CIPHER_TKIP		= 0x00000004,
-	IEEE80211_CIPHER_CCMP		= 0x00000008,
-	IEEE80211_CIPHER_WEP104		= 0x00000010,
-	IEEE80211_CIPHER_BIP		= 0x00000020	/* 11w */
+struct NetworkInformation {
+	u_int8_t		essid[APPLE80211_MAX_SSID_LEN];
+	u_int8_t		bssid[APPLE80211_ADDR_LEN];
+	u_int8_t		rssi;
+	u_int16_t		capabilities;
+	u_int16_t		beacon_interval;
+	u_int32_t		timestamp;
+	u_int8_t		*rsn_ie;
+	int 			channel;
 };
 
 
-struct interop_scan_result_network {
-	u_int8_t		ni_essid[APPLE80211_MAX_SSID_LEN];
-	u_int8_t		ni_bssid[APPLE80211_ADDR_LEN];
-	u_int			ni_rsnciphers;
-	enum ieee80211_cipher	ni_rsncipher;
-	enum ieee80211_cipher	ni_rsngroupmgmtcipher;
-	enum ieee80211_cipher	ni_rsngroupcipher;
-	u_int8_t		ni_rssi;	/* recv ssi */
-	u_int16_t		ni_capinfo;	/* capabilities */
-	u_int16_t		ni_intval;	/* beacon interval */
-	u_int			ni_rsnakms;
-	u_int			ni_supported_rsnakms;
-	u_int			ni_rsnprotos;
-	u_int			ni_supported_rsnprotos;
-	u_int32_t		ni_rstamp;	/* recv timestamp */
-	u_int8_t		*ni_rsnie;
-	int 			ni_channel;
-};
+class ScanResult : public OSObject {
+	OSDeclareDefaultStructors(ScanResult)
+	
+public:
+	virtual bool init() override;
+	virtual void free() override;
 
-struct interop_scan_result {
+	static ScanResult* scanResult();
+	
 	size_t count;
-	interop_scan_result_network *networks;
+	NetworkInformation *networks;
 };
 
 
@@ -211,8 +201,7 @@ private:
     bool addMediumType(UInt32 type, UInt32 speed, UInt32 code, char* name = 0);
 	static void postScanningDoneMessage(OSObject* self, ...);
 public:
-	interop_scan_result* scan_result;
-	apple80211_scan_result* prevResult;
+	ScanResult* scan_result;
     
     IOWorkLoop* fWorkloop;
     IO80211Interface* fInterface;
