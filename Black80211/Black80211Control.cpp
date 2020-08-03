@@ -68,8 +68,6 @@ IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
 	}
 	fProvider->retain();
 	
-	fProvider->setController(this);
-	
     return this;
 }
 
@@ -102,7 +100,21 @@ IOWorkLoop* Black80211Control::getWorkLoop() const {
 }
 
 bool Black80211Control::start(IOService* provider) {
+	OSDictionary *matchingDict = provider->serviceMatching("AppleSMC");
+	if (!matchingDict)
+		return false;
+	
+	IOService *smc = provider->waitForMatchingService(matchingDict);
+	OSSafeReleaseNULL(matchingDict);
+
+	if (!smc)
+		return false; // too early
+	
+	OSSafeReleaseNULL(smc);	
+	
     IOLog("Black80211: Start\n");
+	fProvider->setController(this);
+	
     if (!super::start(provider)) {
         IOLog("Black80211: Failed to call IO80211Controller::start!\n");
         ReleaseAll();
