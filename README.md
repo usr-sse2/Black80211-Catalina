@@ -40,6 +40,6 @@ kextutil Black80211.kext -r .
 ```
 
 ### How to load on boot:
-- in the installer or Recovery the kexts can be injected with Clover or OpenCore (itlwm should go before Black80211 in OpenCore `config.plist`)
-- in an installed system the kexts can't be injected, because macOS omits IO80211Family from the `prelinkedkernel` when there are no wireless drivers for actually present hardware in `/System/Library/Extensions` or `/Library/Extensions`, so itlwm and Black80211 should be installed to `/Library/Extensions`;
-- when SecureBoot support is implemented in some future version of OpenCore, the injection would work because the `immutablekernel` used by SecureBoot always contains IO80211Family.
+- *(Recommended)* the kexts can be injected with this version of OpenCore: https://github.com/acidanthera/bugtracker/issues/1071. It supports loading `immutablekernel` which always contains IO80211Family.kext;
+- *(Not recommended)* the kexts can be installed to `/Library/Extensions` with System Integrity Protection disabled;
+- only in the installer or Recovery the kexts can be injected with regular OpenCore or Clover, because macOS excludes IO80211Family from the `prelinkedkernel` when there are no wireless devices with drivers in system locations.
