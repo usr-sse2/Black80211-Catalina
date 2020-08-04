@@ -36,7 +36,8 @@ put Black80211.kext and itlwm.kext in the same folder
 ```bash
 sudo chown -R root:wheel *.kext
 sudo chmod -R 755 *.kext
-kextutil Black80211.kext -r .
+sudo kextutil itlwm.kext
+sudo kextutil Black80211.kext -r .
 ```
 
 ### How to load on boot:
