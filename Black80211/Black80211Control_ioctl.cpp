@@ -18,36 +18,32 @@ const char *fake_country_code = "RU";
 
 IOReturn Black80211Control::message(UInt32 type, IOService *provider, void *argument) {
 	IOLog("%s: %d TYPE=%d\n", __PRETTY_FUNCTION__, __LINE__, type);
-	/*IOReturn ret = fCommandGate->runAction([](OSObject *target, void* arg0, void* arg1, void* arg2, void* arg3) -> IOReturn {
-		auto self = (Black80211Control*)arg0;
-		auto type = *(UInt32*)arg1;
-		IOLog("%s: %d\n", __PRETTY_FUNCTION__, __LINE__);*/
 	switch (type) {
 		case kIOMessageNetworkChanged:
 			fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
 			//self->fInterface->postMessage(APPLE80211_M_LINK_CHANGED);
-			IOLog("%s: success\n", __PRETTY_FUNCTION__);
 			return kIOReturnSuccess;
 		case kIOMessageScanComplete:
 			if (requestedScanning) {
 				requestedScanning = false;
 				networkIndex = 0;
+				ScanResult *oldScanResult = scan_result;
 				scan_result = fProvider->getScanResult();
 				IOLog("Black80211: Scanning complete, found %lu networks\n", scan_result->count);
+				for (int i = 0; i < scan_result->count; i++)
+					IOLog("%.*s: %d\n", APPLE80211_MAX_SSID_LEN + 1, scan_result->networks[i].essid, scan_result->networks[i].channel);
 				// Try to send but don't deadlock
 				fCommandGate->attemptAction([](OSObject *target, void* arg0, void* arg1, void* arg2, void* arg3) {
+					ScanResult* oldScanResult = (ScanResult*)arg1;
+					OSSafeReleaseNULL(oldScanResult);
 					((IO80211Interface*)arg0)->postMessage(APPLE80211_M_SCAN_DONE);
 					return kIOReturnSuccess;
-				}, fInterface);
+				}, fInterface, oldScanResult);
 			}
-			IOLog("%s: success\n", __PRETTY_FUNCTION__);
 			return kIOReturnSuccess;
 	}
 	IOLog("%s: unsupported\n", __PRETTY_FUNCTION__);
 	return kIOReturnUnsupported;
-	/*}, this, &type, provider, argument);
-	IOLog("%s: %d RET= %d\n", __PRETTY_FUNCTION__, __LINE__, ret);
-	return ret;*/
 }
 
 //
@@ -247,6 +243,13 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 	uint8_t *b = sd->bssid.octet;
 	IOLog("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\n", b[0], b[1], b[2], b[3], b[4], b[5]);
 
+	IOLog("Channels:\n");
+	uint8_t channels[255];
+	for (int i = 0; i < sd->num_channels; i++) {
+		IOLog("%d\n", sd->channels[i].channel);
+		channels[i] = sd->channels[i].channel;
+	}
+	
 	if (sd->scan_type == APPLE80211_SCAN_TYPE_FAST ||
 		(fProvider->getState() != APPLE80211_S_RUN && sd->num_channels != 0 && sd->channels[0].channel != 1)) {
 	  IOLog("Reporting previous scan result\n");
@@ -259,13 +262,6 @@ IOReturn Black80211Control::setSCAN_REQ(IO80211Interface *interface,
 
 	IOLog("Begin scanning\n");
 	requestedScanning = true;
-
-	IOLog("Channels:\n");
-	uint8_t channels[255];
-	for (int i = 0; i < sd->num_channels; i++) {
-		IOLog("%d\n", sd->channels[i].channel);
-		channels[i] = sd->channels[i].channel;
-	}
 
 	IOReturn status = fProvider->bgscan(channels, sd->num_channels, (const char*)sd->ssid, sd->ssid_len);
 	if (status != kIOReturnSuccess)
@@ -396,7 +392,6 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 	}
 
 	IOLog("Reported all results\n");
-	OSSafeReleaseNULL(scan_result);
 	return 5;
 }
 
@@ -598,14 +593,13 @@ IOReturn Black80211Control::setPOWER(IO80211Interface *interface,
                                      struct apple80211_power_data *pd) {
 	requestedScanning = false;
     if (pd->num_radios > 0) {
-		if (pd->power_state[0]) {
-			fProvider->enable();
+		if (pd->power_state[0] != powerState) {
+			if (pd->power_state[0])
+				enable(interface);
+			else
+				disable(interface);
+			powerState = pd->power_state[0];
 		}
-		else {
-			fProvider->disable();
-		}
-
-        powerState = pd->power_state[0];
     }
     //fInterface->postMessage(APPLE80211_M_POWER_CHANGED, NULL, 0);
     
@@ -835,7 +829,7 @@ IOReturn Black80211Control::getRADIO_INFO(IO80211Interface* interface, struct ap
 
 IOReturn Black80211Control::setSCANCACHE_CLEAR(IO80211Interface *interface) {
 	networkIndex = 0;
-	scan_result = nullptr;
+	OSSafeReleaseNULL(scan_result);
 	return kIOReturnSuccess;
 }
 

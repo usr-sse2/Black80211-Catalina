@@ -179,7 +179,7 @@ bool Black80211Control::start(IOService* provider) {
         return false;
     }
      */
-    if (!attachInterface((IONetworkInterface**) &fInterface, true)) {
+    if (!attachInterface((IONetworkInterface**) &fInterface, false)) {
         IOLog("Black80211: Failed to attach interface!\n");
         ReleaseAll();
         return false;
@@ -223,6 +223,8 @@ IOReturn Black80211Control::enable(IONetworkInterface* iface) {
     IOMediumType mediumType = kIOMediumIEEE80211Auto;
     IONetworkMedium *medium = IONetworkMedium::getMediumWithType(mediumDict, mediumType);
     setLinkStatus(kIONetworkLinkValid, medium);
+	
+	fProvider->enable();
     
     if(fInterface) {
         fInterface->postMessage(APPLE80211_M_POWER_CHANGED);
@@ -233,6 +235,7 @@ IOReturn Black80211Control::enable(IONetworkInterface* iface) {
 
 IOReturn Black80211Control::disable(IONetworkInterface* iface) {
     IOLog("Black80211: disable");
+	fProvider->disable();
     return kIOReturnSuccess;
 }
 
