@@ -10,7 +10,6 @@
 #include "ieee80211_ioctl.h"
 
 const char *fake_hw_version = "Hardware 1.0";
-const char *fake_drv_version = "Driver 1.0";
 const char *fake_country_code = "RU";
 
 #define kIOMessageNetworkChanged iokit_vendor_specific_msg(1)
@@ -514,8 +513,9 @@ IOReturn Black80211Control::getPHY_MODE(IO80211Interface *interface,
     pd->phy_mode = APPLE80211_MODE_11A
                  | APPLE80211_MODE_11B
                  | APPLE80211_MODE_11G
-				 | APPLE80211_MODE_11N;
-    pd->active_phy_mode = APPLE80211_MODE_11N;
+				 | APPLE80211_MODE_11N
+				 | APPLE80211_MODE_11AC;
+    pd->active_phy_mode = fProvider->getPHYMode();
     return kIOReturnSuccess;
 }
 
@@ -742,8 +742,7 @@ IOReturn Black80211Control::getANTENNA_DIVERSITY(IO80211Interface *interface,
 IOReturn Black80211Control::getDRIVER_VERSION(IO80211Interface *interface,
                                               struct apple80211_version_data *hv) {
     hv->version = APPLE80211_VERSION;
-    strncpy(hv->string, fake_drv_version, sizeof(hv->string));
-    hv->string_len = strlen(fake_drv_version);
+	fProvider->getFirmwareVersion(hv->string, hv->string_len);
     return kIOReturnSuccess;
 }
 
