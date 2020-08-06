@@ -10,7 +10,6 @@
 #include "ieee80211_ioctl.h"
 
 const char *fake_hw_version = "Hardware 1.0";
-const char *fake_country_code = "RU";
 
 #define kIOMessageNetworkChanged iokit_vendor_specific_msg(1)
 #define kIOMessageScanComplete iokit_vendor_specific_msg(2)
@@ -510,11 +509,7 @@ IOReturn Black80211Control::setSTATE(IO80211Interface *interface,
 IOReturn Black80211Control::getPHY_MODE(IO80211Interface *interface,
                                         struct apple80211_phymode_data *pd) {
     pd->version = APPLE80211_VERSION;
-    pd->phy_mode = APPLE80211_MODE_11A
-                 | APPLE80211_MODE_11B
-                 | APPLE80211_MODE_11G
-				 | APPLE80211_MODE_11N
-				 | APPLE80211_MODE_11AC;
+    pd->phy_mode = fProvider->getSupportedPHYModes();
     pd->active_phy_mode = fProvider->getPHYMode();
     return kIOReturnSuccess;
 }
@@ -526,7 +521,7 @@ IOReturn Black80211Control::getPHY_MODE(IO80211Interface *interface,
 IOReturn Black80211Control::getOP_MODE(IO80211Interface *interface,
                                        struct apple80211_opmode_data *od) {
     od->version = APPLE80211_VERSION;
-    od->op_mode = APPLE80211_M_STA;
+    od->op_mode = fProvider->getOpMode();
     return kIOReturnSuccess;
 }
 
@@ -796,7 +791,7 @@ IOReturn Black80211Control::getASSOCIATION_STATUS(IO80211Interface *interface,
 IOReturn Black80211Control::getCOUNTRY_CODE(IO80211Interface *interface,
                                             struct apple80211_country_code_data *cd) {
     cd->version = APPLE80211_VERSION;
-    strncpy((char*)cd->cc, fake_country_code, sizeof(cd->cc));
+	fProvider->getCountryCode((char*)cd->cc);
     return kIOReturnSuccess;
 }
 
