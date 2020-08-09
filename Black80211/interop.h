@@ -77,11 +77,11 @@ public:
 	virtual IOCommandGate *getCommandGate() const = 0;
     virtual const OSString * newVendorString() const = 0;
     virtual const OSString * newModelString() const = 0;
-	virtual void getFirmwareVersion(char version[256], uint16_t &version_len);
-	virtual uint32_t getPHYMode();
-	virtual uint32_t getSupportedPHYModes();
-	virtual uint32_t getOpMode();
-	virtual void getCountryCode(const char countryCode[3]);
+	virtual void getFirmwareVersion(char version[256], uint16_t &version_len) = 0;
+	virtual uint32_t getPHYMode() = 0;
+	virtual uint32_t getSupportedPHYModes() = 0;
+	virtual uint32_t getOpMode() = 0;
+	virtual void getCountryCode(const char countryCode[3]) = 0;
 };
 
 #endif /* interop_hpp */
