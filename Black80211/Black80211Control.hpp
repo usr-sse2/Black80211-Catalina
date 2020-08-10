@@ -139,7 +139,6 @@ private:
         RELEASE(fWorkloop);
         RELEASE(mediumDict);
         RELEASE(fWorkloop);
-        RELEASE(fPciDevice);
         
         if (dev) {
             delete dev;
@@ -153,7 +152,6 @@ private:
     IO80211Interface* fInterface;
     IOGatedOutputQueue* fOutputQueue;
     IOCommandGate* fCommandGate;
-    IOPCIDevice* fPciDevice;
     
     FakeDevice* dev;
     

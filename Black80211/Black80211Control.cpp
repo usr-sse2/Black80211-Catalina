@@ -36,23 +36,6 @@ IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
     
     super::probe(provider, score);
     
-    fPciDevice = OSDynamicCast(IOPCIDevice, provider);
-    if (!fPciDevice) {
-        IOLog("Black80211: Provider is not PCI device");
-        fPciDevice = NULL;
-        return NULL;
-    }
-    UInt16 fDeviceId = fPciDevice->configRead16(kIOPCIConfigDeviceID);
-    UInt16 fSubsystemId = fPciDevice->configRead16(kIOPCIConfigSubSystemID);
-    
-    if(fDeviceId != 0x24FD) {
-        IOLog("Black80211: not a 8265 device");
-        fPciDevice = NULL;
-        return NULL;
-    }
-    
-    fPciDevice->retain();
-    
     return this;
 }
 
