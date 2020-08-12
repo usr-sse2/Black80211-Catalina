@@ -85,13 +85,8 @@ IONetworkInterface *Black80211Control::createInterface() {
 
 bool Black80211Control::createWorkLoop() {
 	if(!fWorkloop) {
-		if (fProvider) {
-			fWorkloop = fProvider->getWorkLoop();
-			if (fWorkloop)
-				fWorkloop->retain();
-		}
-    }
-    
+		fWorkloop = IO80211WorkLoop::workLoop();
+    }    
     return (fWorkloop != NULL);
 }
 
@@ -113,21 +108,23 @@ bool Black80211Control::start(IOService* provider) {
 	OSSafeReleaseNULL(smc);	
 	
     IOLog("Black80211: Start\n");
-	fProvider->setController(this);
+    
+    createWorkLoop();
+    if (!fWorkloop) {
+        IOLog("Black80211: Failed to get workloop!\n");
+        ReleaseAll();
+        return false;
+    }
+
+    
+    fProvider->setController(this);
 	
     if (!super::start(provider)) {
         IOLog("Black80211: Failed to call IO80211Controller::start!\n");
         ReleaseAll();
         return false;
     }
-	
-    //fWorkloop = (IO80211WorkLoop *)getWorkLoop();
-    if (!fWorkloop) {
-        IOLog("Black80211: Failed to get workloop!\n");
-        ReleaseAll();
-        return false;
-    }
-    
+	    
 	fCommandGate = fProvider->getCommandGate();
     if (!fCommandGate) {
         IOLog("Black80211: Failed to create command gate!\n");

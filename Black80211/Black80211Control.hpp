@@ -44,10 +44,10 @@ class Black80211Control : public IO80211Controller {
     OSDeclareDefaultStructors(Black80211Control)
     
 public:
-    bool init(OSDictionary* parameters) APPLE_KEXT_OVERRIDE;
-    void free() APPLE_KEXT_OVERRIDE;
-    bool start(IOService* provider) APPLE_KEXT_OVERRIDE;
-    void stop(IOService* provider) APPLE_KEXT_OVERRIDE;
+    bool init(OSDictionary* parameters) override;
+    void free() override;
+    bool start(IOService* provider) override;
+    void stop(IOService* provider) override;
     IOService* probe(IOService* provider, SInt32* score) override;
     
     SInt32 apple80211Request(unsigned int request_type, int request_number, IO80211Interface* interface, void* data) override;

@@ -9,7 +9,19 @@
 /* Begin PBXBuildFile section */
 		358C6ABA24D15CBF008A4FBD /* Black80211Interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 358C6AB824D15CBF008A4FBD /* Black80211Interface.cpp */; };
 		358C6ABB24D15CBF008A4FBD /* Black80211Interface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 358C6AB924D15CBF008A4FBD /* Black80211Interface.hpp */; };
-		6811BAE023E36DB00004FF34 /* IONetworkController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD623E36DB00004FF34 /* IONetworkController.h */; };
+		35CB508D24E2D606001E2639 /* Black80211Control.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A612723C203A1079009DD95B /* Black80211Control.cpp */; };
+		35CB508E24E2D606001E2639 /* Black80211Control_ioctl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A632F0D620E8230700AAC444 /* Black80211Control_ioctl.cpp */; };
+		35CB508F24E2D606001E2639 /* Black80211Interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 358C6AB824D15CBF008A4FBD /* Black80211Interface.cpp */; };
+		35CB509224E2D606001E2639 /* apple80211_ioctl.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADF23E36DB00004FF34 /* apple80211_ioctl.h */; };
+		35CB509324E2D606001E2639 /* IOSkywalkEthernetInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD723E36DB00004FF34 /* IOSkywalkEthernetInterface.h */; };
+		35CB509424E2D606001E2639 /* apple80211_wps.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADC23E36DB00004FF34 /* apple80211_wps.h */; };
+		35CB509524E2D606001E2639 /* IO80211WorkLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADD23E36DB00004FF34 /* IO80211WorkLoop.h */; };
+		35CB509624E2D606001E2639 /* IO80211SkywalkInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADA23E36DB00004FF34 /* IO80211SkywalkInterface.h */; };
+		35CB509724E2D606001E2639 /* IO80211Interface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD823E36DB00004FF34 /* IO80211Interface.h */; };
+		35CB509824E2D606001E2639 /* IO80211Controller.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD923E36DB00004FF34 /* IO80211Controller.h */; };
+		35CB509924E2D606001E2639 /* Black80211Control.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A61272252039FD13009DD95B /* Black80211Control.hpp */; };
+		35CB509A24E2D606001E2639 /* apple80211_var.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADB23E36DB00004FF34 /* apple80211_var.h */; };
+		35CB509B24E2D606001E2639 /* Black80211Interface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 358C6AB924D15CBF008A4FBD /* Black80211Interface.hpp */; };
 		6811BAE123E36DB00004FF34 /* IOSkywalkEthernetInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD723E36DB00004FF34 /* IOSkywalkEthernetInterface.h */; };
 		6811BAE223E36DB00004FF34 /* IO80211Interface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD823E36DB00004FF34 /* IO80211Interface.h */; };
 		6811BAE323E36DB00004FF34 /* IO80211Controller.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BAD923E36DB00004FF34 /* IO80211Controller.h */; };
@@ -17,7 +29,6 @@
 		6811BAE523E36DB00004FF34 /* apple80211_var.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADB23E36DB00004FF34 /* apple80211_var.h */; };
 		6811BAE623E36DB00004FF34 /* apple80211_wps.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADC23E36DB00004FF34 /* apple80211_wps.h */; };
 		6811BAE723E36DB00004FF34 /* IO80211WorkLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADD23E36DB00004FF34 /* IO80211WorkLoop.h */; };
-		6811BAE823E36DB00004FF34 /* IOEthernetController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADE23E36DB00004FF34 /* IOEthernetController.h */; };
 		6811BAE923E36DB00004FF34 /* apple80211_ioctl.h in Headers */ = {isa = PBXBuildFile; fileRef = 6811BADF23E36DB00004FF34 /* apple80211_ioctl.h */; };
 		6863647723E36CDF00549C37 /* Black80211Control.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A612723C203A1079009DD95B /* Black80211Control.cpp */; };
 		6863647823E36CDF00549C37 /* Black80211Control_ioctl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A632F0D620E8230700AAC444 /* Black80211Control_ioctl.cpp */; };
@@ -27,8 +38,8 @@
 /* Begin PBXFileReference section */
 		358C6AB824D15CBF008A4FBD /* Black80211Interface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Black80211Interface.cpp; sourceTree = "<group>"; };
 		358C6AB924D15CBF008A4FBD /* Black80211Interface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Black80211Interface.hpp; sourceTree = "<group>"; };
+		35CB50A024E2D606001E2639 /* Black80211.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Black80211.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		35EB748624D6FD4700F06692 /* interop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = interop.h; sourceTree = "<group>"; };
-		6811BAD623E36DB00004FF34 /* IONetworkController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IONetworkController.h; sourceTree = "<group>"; };
 		6811BAD723E36DB00004FF34 /* IOSkywalkEthernetInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOSkywalkEthernetInterface.h; sourceTree = "<group>"; };
 		6811BAD823E36DB00004FF34 /* IO80211Interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IO80211Interface.h; sourceTree = "<group>"; };
 		6811BAD923E36DB00004FF34 /* IO80211Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IO80211Controller.h; sourceTree = "<group>"; };
@@ -36,7 +47,6 @@
 		6811BADB23E36DB00004FF34 /* apple80211_var.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = apple80211_var.h; sourceTree = "<group>"; };
 		6811BADC23E36DB00004FF34 /* apple80211_wps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = apple80211_wps.h; sourceTree = "<group>"; };
 		6811BADD23E36DB00004FF34 /* IO80211WorkLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IO80211WorkLoop.h; sourceTree = "<group>"; };
-		6811BADE23E36DB00004FF34 /* IOEthernetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOEthernetController.h; sourceTree = "<group>"; };
 		6811BADF23E36DB00004FF34 /* apple80211_ioctl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = apple80211_ioctl.h; sourceTree = "<group>"; };
 		6863648D23E36CDF00549C37 /* Black80211.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Black80211.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		A61272252039FD13009DD95B /* Black80211Control.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Black80211Control.hpp; sourceTree = "<group>"; };
@@ -48,6 +58,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		35CB509024E2D606001E2639 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6863647923E36CDF00549C37 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -68,8 +85,6 @@
 				6811BAD823E36DB00004FF34 /* IO80211Interface.h */,
 				6811BADA23E36DB00004FF34 /* IO80211SkywalkInterface.h */,
 				6811BADD23E36DB00004FF34 /* IO80211WorkLoop.h */,
-				6811BADE23E36DB00004FF34 /* IOEthernetController.h */,
-				6811BAD623E36DB00004FF34 /* IONetworkController.h */,
 				6811BAD723E36DB00004FF34 /* IOSkywalkEthernetInterface.h */,
 			);
 			path = catalina;
@@ -87,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				6863648D23E36CDF00549C37 /* Black80211.kext */,
+				35CB50A024E2D606001E2639 /* Black80211.kext */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -119,16 +135,31 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		35CB509124E2D606001E2639 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				35CB509224E2D606001E2639 /* apple80211_ioctl.h in Headers */,
+				35CB509324E2D606001E2639 /* IOSkywalkEthernetInterface.h in Headers */,
+				35CB509424E2D606001E2639 /* apple80211_wps.h in Headers */,
+				35CB509524E2D606001E2639 /* IO80211WorkLoop.h in Headers */,
+				35CB509624E2D606001E2639 /* IO80211SkywalkInterface.h in Headers */,
+				35CB509724E2D606001E2639 /* IO80211Interface.h in Headers */,
+				35CB509824E2D606001E2639 /* IO80211Controller.h in Headers */,
+				35CB509924E2D606001E2639 /* Black80211Control.hpp in Headers */,
+				35CB509A24E2D606001E2639 /* apple80211_var.h in Headers */,
+				35CB509B24E2D606001E2639 /* Black80211Interface.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6863647A23E36CDF00549C37 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				6811BAE923E36DB00004FF34 /* apple80211_ioctl.h in Headers */,
 				6811BAE123E36DB00004FF34 /* IOSkywalkEthernetInterface.h in Headers */,
-				6811BAE823E36DB00004FF34 /* IOEthernetController.h in Headers */,
 				6811BAE623E36DB00004FF34 /* apple80211_wps.h in Headers */,
 				6811BAE723E36DB00004FF34 /* IO80211WorkLoop.h in Headers */,
-				6811BAE023E36DB00004FF34 /* IONetworkController.h in Headers */,
 				6811BAE423E36DB00004FF34 /* IO80211SkywalkInterface.h in Headers */,
 				6811BAE223E36DB00004FF34 /* IO80211Interface.h in Headers */,
 				6811BAE323E36DB00004FF34 /* IO80211Controller.h in Headers */,
@@ -141,9 +172,27 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		6863647423E36CDF00549C37 /* Black80211_Catalina */ = {
+		35CB508B24E2D606001E2639 /* Big Sur */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6863648A23E36CDF00549C37 /* Build configuration list for PBXNativeTarget "Black80211_Catalina" */;
+			buildConfigurationList = 35CB509D24E2D606001E2639 /* Build configuration list for PBXNativeTarget "Big Sur" */;
+			buildPhases = (
+				35CB508C24E2D606001E2639 /* Sources */,
+				35CB509024E2D606001E2639 /* Frameworks */,
+				35CB509124E2D606001E2639 /* Headers */,
+				35CB509C24E2D606001E2639 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Big Sur";
+			productName = Black80211;
+			productReference = 35CB50A024E2D606001E2639 /* Black80211.kext */;
+			productType = "com.apple.product-type.kernel-extension";
+		};
+		6863647423E36CDF00549C37 /* Catalina */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6863648A23E36CDF00549C37 /* Build configuration list for PBXNativeTarget "Catalina" */;
 			buildPhases = (
 				6863647523E36CDF00549C37 /* Sources */,
 				6863647923E36CDF00549C37 /* Frameworks */,
@@ -154,7 +203,7 @@
 			);
 			dependencies = (
 			);
-			name = Black80211_Catalina;
+			name = Catalina;
 			productName = Black80211;
 			productReference = 6863648D23E36CDF00549C37 /* Black80211.kext */;
 			productType = "com.apple.product-type.kernel-extension";
@@ -180,12 +229,20 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6863647423E36CDF00549C37 /* Black80211_Catalina */,
+				6863647423E36CDF00549C37 /* Catalina */,
+				35CB508B24E2D606001E2639 /* Big Sur */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		35CB509C24E2D606001E2639 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6863648923E36CDF00549C37 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -196,6 +253,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		35CB508C24E2D606001E2639 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				35CB508D24E2D606001E2639 /* Black80211Control.cpp in Sources */,
+				35CB508E24E2D606001E2639 /* Black80211Control_ioctl.cpp in Sources */,
+				35CB508F24E2D606001E2639 /* Black80211Interface.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6863647523E36CDF00549C37 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -209,19 +276,77 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		6863648B23E36CDF00549C37 /* Debug */ = {
+		35CB509E24E2D606001E2639 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_IDENTITY = "";
-				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/Catalina/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/Big Sur";
 				CURRENT_PROJECT_VERSION = 1.0.0d1;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"__PRIVATE_SPI__=1",
 					"$(inherited)",
-					"CATALINA=1",
+					BIG_SUR,
+				);
+				INFOPLIST_FILE = Black80211/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MARKETING_VERSION = 1.0.0d1;
+				MODULE_NAME = net.rpeshkov.Black80211;
+				MODULE_VERSION = 1.0.0d1;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = net.rpeshkov.Black80211;
+				PRODUCT_NAME = Black80211;
+				SDKROOT = macosx;
+				WARNING_CFLAGS = "-Wno-inconsistent-missing-override";
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Debug;
+		};
+		35CB509F24E2D606001E2639 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CODE_SIGN_IDENTITY = "";
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/Big Sur";
+				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"__PRIVATE_SPI__=1",
+					BIG_SUR,
+				);
+				INFOPLIST_FILE = Black80211/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MODULE_NAME = net.rpeshkov.Black80211;
+				MODULE_VERSION = 1.0.0d1;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = net.rpeshkov.Black80211;
+				PRODUCT_NAME = Black80211;
+				SDKROOT = macosx;
+				WARNING_CFLAGS = (
+					"-Wno-inconsistent-missing-override",
+					"-D__PRIVATE_SPI__",
+				);
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Release;
+		};
+		6863648B23E36CDF00549C37 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CODE_SIGN_IDENTITY = "";
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/Catalina";
+				CURRENT_PROJECT_VERSION = 1.0.0d1;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"__PRIVATE_SPI__=1",
+					"$(inherited)",
 				);
 				INFOPLIST_FILE = Black80211/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
@@ -240,18 +365,15 @@
 		6863648C23E36CDF00549C37 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_IDENTITY = "";
-				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/Catalina/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/Catalina";
 				CURRENT_PROJECT_VERSION = 1.0.0d1;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"__PRIVATE_SPI__=1",
-					"CATALINA=1",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = "CATALINA=1";
 				INFOPLIST_FILE = Black80211/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				MARKETING_VERSION = 1.0.0d1;
 				MODULE_NAME = net.rpeshkov.Black80211;
 				MODULE_VERSION = 1.0.0d1;
 				ONLY_ACTIVE_ARCH = YES;
@@ -377,7 +499,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6863648A23E36CDF00549C37 /* Build configuration list for PBXNativeTarget "Black80211_Catalina" */ = {
+		35CB509D24E2D606001E2639 /* Build configuration list for PBXNativeTarget "Big Sur" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				35CB509E24E2D606001E2639 /* Debug */,
+				35CB509F24E2D606001E2639 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6863648A23E36CDF00549C37 /* Build configuration list for PBXNativeTarget "Catalina" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6863648B23E36CDF00549C37 /* Debug */,
