@@ -5,7 +5,8 @@ on:
     branches: master
 
 env:
-  BUILD_OUTPUT: 'build/Build/Products/Catalina/Debug'
+  BUILD_OUTPUT_CATALINA: 'build/Build/Products/Debug/Catalina'
+  BUILD_OUTPUT_BIG_SUR: 'build/Build/Products/Debug/Big Sur'
 
 jobs:
 
@@ -42,14 +43,24 @@ jobs:
         echo '### The latest five updates are:' >> ReleaseNotes.md
         git log -"5" --format="- %H %s" | sed '/^$/d' >> ReleaseNotes.md
 
-    - name: Build Black80211
+    - name: Build Black80211 (Catalina)
       run: |
-        xcodebuild -scheme Black80211_Catalina -configuration Debug -sdk macosx10.15 -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | xcpretty && exit ${PIPESTATUS[0]}
+        xcodebuild -scheme Catalina -configuration Debug -sdk macosx10.15 -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | xcpretty && exit ${PIPESTATUS[0]}
 
-    - name: Pack Artifacts
+    - name: Pack Artifacts (Catalina)
       run: |
-        cd $BUILD_OUTPUT
-        zip -r Black80211-v${BLACK80211_VER}-DEBUG-alpha-${SHORT_SHA}.zip Black80211.kext
+        cd "$BUILD_OUTPUT_CATALINA"
+        zip -r Black80211-v${BLACK80211_VER}-Catalina-DEBUG-alpha-${SHORT_SHA}.zip Black80211.kext
+        cd -
+
+    - name: Build Black80211 (Big Sur)
+      run: |
+        xcodebuild -scheme 'Big Sur' -configuration Debug -sdk macosx10.15 -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | xcpretty && exit ${PIPESTATUS[0]}
+
+    - name: Pack Artifacts (Big Sur)
+      run: |
+        cd "$BUILD_OUTPUT_BIG_SUR"
+        zip -r Black80211-v${BLACK80211_VER}-Big-Sur-DEBUG-alpha-${SHORT_SHA}.zip Black80211.kext
         cd -
 
     - name: Delete Old Prerelease
@@ -64,6 +75,6 @@ jobs:
       with:
         prerelease: true
         bodyFile: ReleaseNotes.md
-        artifacts: "${{ env.BUILD_OUTPUT }}/*.zip"
+        artifacts: "${{ env.BUILD_OUTPUT_CATALINA }}/*.zip,${{ env.BUILD_OUTPUT_BIG_SUR }}/*.zip"
         tag: "v${{ env.BLACK80211_VER }}-alpha"
         token: ${{ secrets.GITHUB_TOKEN }}
