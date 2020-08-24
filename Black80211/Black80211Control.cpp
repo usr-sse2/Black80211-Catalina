@@ -47,11 +47,11 @@ void Black80211Control::free() {
 }
 
 bool Black80211Control::useAppleRSNSupplicant(IO80211Interface *interface) {
-	return false;
+	return true;
 }
 
 bool Black80211Control::useAppleRSNSupplicant(IO80211VirtualInterface *interface) {
-	return false;
+	return true;
 }
 
 IOService* Black80211Control::probe(IOService *provider, SInt32 *score) {
@@ -332,7 +332,7 @@ if (REQ_TYPE == SIOCSA80211) { \
         case APPLE80211_IOC_AUTH_TYPE: // 2
             IOCTL(request_type, AUTH_TYPE, apple80211_authtype_data);
             break;
-		case APPLE80211_IOC_CIPHER_KEY:
+		case APPLE80211_IOC_CIPHER_KEY: // 3
 			IOCTL(request_type, CIPHER_KEY, apple80211_key);
 			break;
         case APPLE80211_IOC_CHANNEL: // 4
@@ -414,6 +414,9 @@ if (REQ_TYPE == SIOCSA80211) { \
 		case APPLE80211_IOC_RSN_IE: // 46
 			IOCTL(request_type, RSN_IE, apple80211_rsn_ie_data);
 			break;
+		case APPLE80211_IOC_AP_IE_LIST: // 48
+			IOCTL_GET(request_type, AP_IE_LIST, apple80211_ap_ie_data);
+			break;
 		case APPLE80211_IOC_ASSOCIATION_STATUS: // 50
 			IOCTL_GET(request_type, ASSOCIATION_STATUS, apple80211_assoc_status_data);
 			break;
@@ -464,8 +467,27 @@ IO80211Interface* Black80211Control::getNetworkInterface() {
     return fInterface;
 }
 
-UInt32 Black80211Control::outputPacket(mbuf_t m, void* param) {
-	return fProvider->outputPacket(m, param);
+const char* hexdump(uint8_t *buf, size_t len);
+
+UInt32 Black80211Control::outputPacket(mbuf_t packet, void* param) {
+	uint8_t ether_type[2];
+	if (mbuf_len(packet) >= 14 && mbuf_copydata(packet, 12, 2, &ether_type) == 0 && (ether_type[0] == 0x88 && ether_type[1] == 0x8e)) { // EAPOL packet
+		const char* dump = hexdump((uint8_t*)mbuf_data(packet), mbuf_len(packet));
+		IOLog("Black80211: output EAPOL packet, len: %zu, data: %s\n", mbuf_len(packet), dump ? dump : "Failed to allocate memory");
+		if (dump)
+			IOFree((void*)dump, 3 * mbuf_len(packet) + 1);
+	}
+	return fProvider->outputPacket(packet, param);
+}
+
+int Black80211Control::outputActionFrame(IO80211Interface * interface, mbuf_t m) {
+	IOLog("%s, length %zu\n", __FUNCTION__, mbuf_pkthdr_len(m));
+	return fProvider->outputPacket(m, nullptr);
+}
+
+int Black80211Control::outputRaw80211Packet(IO80211Interface * interface, mbuf_t m) {
+	IOLog("%s, length %zu\n", __FUNCTION__, mbuf_pkthdr_len(m));
+	return fProvider->outputPacket(m, nullptr);	
 }
 
 IOReturn Black80211Control::getMaxPacketSize( UInt32* maxSize ) const {

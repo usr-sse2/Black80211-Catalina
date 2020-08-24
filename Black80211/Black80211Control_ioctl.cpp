@@ -63,7 +63,7 @@ IOReturn Black80211Control::getSSID(IO80211Interface *interface,
 
 IOReturn Black80211Control::setSSID(IO80211Interface *interface,
                                     struct apple80211_ssid_data *sd) {
-	fProvider->setSSID((const char*)sd->ssid_bytes);
+	IOLog("Black80211: setSSID is not supported\n");
     //fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
     return kIOReturnSuccess;
 }
@@ -107,22 +107,61 @@ IOReturn Black80211Control::getCIPHER_KEY(IO80211Interface *interface,
     return kIOReturnSuccess;
 }
 
+const char* hexdump(uint8_t *buf, size_t len) {
+	ssize_t str_len = len * 3 + 1;
+	char *str = (char*)IOMalloc(str_len);
+	if (!str)
+		return nullptr;
+	for (size_t i = 0; i < len; i++)
+		snprintf(str + 3 * i, (len - i) * 3, "%02x ", buf[i]);
+	str[MAX(str_len - 2, 0)] = 0;
+	return str;
+}
+
 IOReturn Black80211Control::setCIPHER_KEY(IO80211Interface *interface,
                                          struct apple80211_key *key) {
+	const char* keydump = hexdump(key->key, key->key_len);
+	const char* rscdump = hexdump(key->key_rsc, key->key_rsc_len);
+	const char* eadump = hexdump(key->key_ea.octet, APPLE80211_ADDR_LEN);
+	if (keydump && rscdump && eadump)
+		IOLog("Set key request: len=%d cipher_type=%d flags=%d index=%d key=%s rsc_len=%d rsc=%s ea=%s\n",
+			  key->key_len, key->key_cipher_type, key->key_flags, key->key_index, keydump, key->key_rsc_len, rscdump, eadump);
+	else
+		IOLog("Set key request, but failed to allocate memory for hexdump\n");
+	
+	if (keydump)
+		IOFree((void*)keydump, 3 * key->key_len + 1);
+	if (rscdump)
+		IOFree((void*)rscdump, 3 * key->key_rsc_len + 1);
+	if (eadump)
+		IOFree((void*)eadump, 3 * APPLE80211_ADDR_LEN + 1);
+	
 	cipher_key = *key;
 	switch (key->key_cipher_type) {
 		case APPLE80211_CIPHER_NONE:
-			IOLog("Setting open network\n");
-			fProvider->setOpen();
+			IOLog("Setting NONE key is not supported\n");
 			break;
 		case APPLE80211_CIPHER_WEP_40:
 		case APPLE80211_CIPHER_WEP_104:
-			IOLog("Setting WEP key %d\n", key->key_index);
-			fProvider->setWEPKey(key->key, key->key_len, key->key_index);
+			IOLog("Setting WEP key %d is not supported\n", key->key_index);
 			break;
-		default:
-			IOLog("Setting WPA key\n");
-			fProvider->setWPAKey(key->key, key->key_len);
+		case APPLE80211_CIPHER_TKIP:
+		case APPLE80211_CIPHER_AES_OCB:
+		case APPLE80211_CIPHER_AES_CCM:
+			switch (key->key_flags) {
+				case 4: // PTK
+					fProvider->setPTK(key->key, key->key_len);
+					break;
+				case 0: // GTK
+					fProvider->setGTK(key->key, key->key_len, key->key_index, key->key_rsc);
+					break;
+			}
+			break;
+		case APPLE80211_CIPHER_PMK:
+			IOLog("Setting WPA PMK is not supported\n");
+			break;
+		case APPLE80211_CIPHER_PMKSA:
+			IOLog("Setting WPA PMKSA is not supported\n");
 			break;
 	}
 	//fInterface->postMessage(APPLE80211_M_CIPHER_KEY_CHANGED);
@@ -194,7 +233,7 @@ IOReturn Black80211Control::getBSSID(IO80211Interface *interface,
                                      struct apple80211_bssid_data *bd) {
     
     bd->version = APPLE80211_VERSION;
-	if (fProvider->getState() != APPLE80211_S_RUN)
+	if (fProvider->getState() < APPLE80211_S_AUTH)
 		return 6;
 
 	fProvider->getBSSID(bd->bssid.octet);
@@ -417,7 +456,7 @@ IOReturn Black80211Control::getCARD_CAPABILITIES(
 	};
 
 	uint64_t capabilities_value = 0;
-	for (int i = 0; i < sizeof(capabilities); i++)
+	for (int i = 0; i < sizeof(capabilities) / sizeof(int); i++)
 		capabilities_value |= (1 << capabilities[i]);
 
 	cd->capabilities[0] = capabilities_value & 0xff;
@@ -607,7 +646,7 @@ IOReturn Black80211Control::setPOWER(IO80211Interface *interface,
 
 IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
                                          struct apple80211_assoc_data *ad) {
-    IOLog("Black80211::setAssociate %s\n", ad->ad_ssid);
+    IOLog("Black80211::setAssociate %s, auth type %x:%x\n", ad->ad_ssid, ad->ad_auth_upper, ad->ad_auth_lower);
 
 	setDISASSOCIATE(interface);
 
@@ -617,23 +656,20 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 	authtype_data.authtype_upper = ad->ad_auth_upper;
 	setAUTH_TYPE(interface, &authtype_data);
 
-	/*
-	apple80211_rsn_ie_data rsn_ie_data;
-	rsn_ie_data.version = APPLE80211_VERSION;
-	rsn_ie_data.len = ad->ad_rsn_ie_len;
-	memcpy(rsn_ie_data.ie, ad->ad_rsn_ie, rsn_ie_data.len);
-	setRSN_IE(interface, &rsn_ie_data);
-	 */
+//	apple80211_rsn_ie_data rsn_ie_data;
+//	rsn_ie_data.version = APPLE80211_VERSION;
+//	rsn_ie_data.len = ad->ad_rsn_ie_len;
+//	memcpy(rsn_ie_data.ie, ad->ad_rsn_ie, rsn_ie_data.len);
+//	setRSN_IE(interface, &rsn_ie_data);
+//	
+//	apple80211_ssid_data ssid_data;
+//	ssid_data.version = APPLE80211_VERSION;
+//	ssid_data.ssid_len = ad->ad_ssid_len;
+//	memcpy(ssid_data.ssid_bytes, ad->ad_ssid, APPLE80211_MAX_SSID_LEN);
+//	setSSID(interface, &ssid_data);
 
-	apple80211_ssid_data ssid_data;
-	ssid_data.version = APPLE80211_VERSION;
-	ssid_data.ssid_len = ad->ad_ssid_len;
-	memcpy(ssid_data.ssid_bytes, ad->ad_ssid, APPLE80211_MAX_SSID_LEN);
-	setSSID(interface, &ssid_data);
-
-	setCIPHER_KEY(interface, &ad->ad_key);
-	fProvider->associate();
-	//IOSleep(5000);
+//	setCIPHER_KEY(interface, &ad->ad_key);
+	fProvider->associate(ad->ad_ssid, ad->ad_ssid_len, ad->ad_auth_lower, ad->ad_auth_upper, ad->ad_key.key, ad->ad_key.key_len, ad->ad_key.key_index);
 
     fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
     fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkUp, 0);
@@ -767,6 +803,16 @@ IOReturn Black80211Control::setRSN_IE(IO80211Interface *interface,
                                                 struct apple80211_rsn_ie_data *rsn_ie_data) {
     return kIOReturnSuccess;
 }
+
+//
+// MARK: 48 - AP_IE_LIST
+//
+IOReturn Black80211Control::getAP_IE_LIST(IO80211Interface *interface,
+                                                struct apple80211_ap_ie_data *ap_ie_data) {
+	fProvider->getAP_IE_LIST(ap_ie_data->len, ap_ie_data->ie_data);
+    return kIOReturnSuccess;
+}
+
 
 //
 // MARK: 50 - ASSOCIATION_STATUS

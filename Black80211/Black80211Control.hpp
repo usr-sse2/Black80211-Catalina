@@ -67,6 +67,9 @@ public:
     IOReturn setMulticastMode(IOEnetMulticastMode mode) override;
     IOReturn setMulticastList(IOEthernetAddress* addr, UInt32 len) override;
     SInt32 monitorModeSetEnabled(IO80211Interface* interface, bool enabled, UInt32 dlt) override;
+	
+	int outputRaw80211Packet(IO80211Interface *, mbuf_t) override;
+	int outputActionFrame(IO80211Interface *, mbuf_t) override;
     
     bool createWorkLoop() override;
     IOWorkLoop* getWorkLoop() const override;
@@ -151,6 +154,8 @@ private:
 	// 46 - RSN_IE
 	IOReturn getRSN_IE(IO80211Interface *interface, struct apple80211_rsn_ie_data *rsn_ie_data);
 	IOReturn setRSN_IE(IO80211Interface *interface, struct apple80211_rsn_ie_data *rsn_ie_data);
+	// 48 - AP_IE_LIST
+	IOReturn getAP_IE_LIST(IO80211Interface *interface, struct apple80211_ap_ie_data *ap_ie_data);	
 	// 50 - ASSOCIATION_STATUS
 	IOReturn getASSOCIATION_STATUS(IO80211Interface *interface, struct apple80211_assoc_status_data *sd);
     // 51 - COUNTRY_CODE
