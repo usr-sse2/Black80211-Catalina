@@ -168,6 +168,10 @@ private:
 	IOReturn setSCANCACHE_CLEAR(IO80211Interface* interface);
 	// 156 - LINK_CHANGED_EVENT_DATA
 	IOReturn getLINK_CHANGED_EVENT_DATA(IO80211Interface* interface, struct apple80211_link_changed_event_data* ed);
+	// 254 - HW_SUPPORTED_CHANNELS
+	IOReturn getHW_SUPPORTED_CHANNELS(IO80211Interface *interface, struct apple80211_sup_channel_data *cd);
+	// 353 - NSS
+	IOReturn getNSS(IO80211Interface *interface, struct apple80211_nss_data *nd);
     
     
     inline void ReleaseAll() {

@@ -19,6 +19,7 @@ struct NetworkInformation {
 	u_int16_t		beacon_interval;
 	u_int32_t		timestamp;
 	u_int8_t		*rsn_ie;
+	u_int32_t		ie_len;
 	int 			channel;
 };
 
@@ -79,7 +80,9 @@ public:
 	virtual void getAP_IE_LIST(uint32_t &ie_list_len, uint8_t *ie_buf) = 0;
 	virtual void setPTK(const u_int8_t *key, size_t key_len) = 0;
 	virtual void setGTK(const u_int8_t *key, size_t key_len, u_int8_t kid, u_int8_t *rsc) = 0;
-	virtual void associate(uint8_t *ssid, uint32_t ssid_len, uint32_t authtype_lower, uint32_t authtype_upper, uint8_t *key, uint32_t key_len, int key_index) = 0;
+	virtual void setPMKSA(const u_int8_t *key, size_t key_len) = 0;
+	virtual void associate(uint8_t *ssid, uint32_t ssid_len, const struct ether_addr& bssid, uint32_t authtype_lower, uint32_t authtype_upper, uint8_t *key, uint32_t key_len, int key_index) = 0;
+	virtual void setRSN_IE(const u_int8_t *ie) = 0;
 };
 
 #endif /* interop_hpp */

@@ -8,6 +8,7 @@
 
 #include "Black80211Control.hpp"
 #include "ieee80211_ioctl.h"
+#include "Black80211Interface.hpp"
 
 const char *fake_hw_version = "Hardware 1.0";
 
@@ -151,9 +152,11 @@ IOReturn Black80211Control::setCIPHER_KEY(IO80211Interface *interface,
 			switch (key->key_flags) {
 				case 4: // PTK
 					fProvider->setPTK(key->key, key->key_len);
+					fInterface->postMessage(APPLE80211_M_RSN_HANDSHAKE_DONE);
 					break;
 				case 0: // GTK
 					fProvider->setGTK(key->key, key->key_len, key->key_index, key->key_rsc);
+					fInterface->postMessage(APPLE80211_M_RSN_HANDSHAKE_DONE);
 					break;
 			}
 			break;
@@ -161,7 +164,7 @@ IOReturn Black80211Control::setCIPHER_KEY(IO80211Interface *interface,
 			IOLog("Setting WPA PMK is not supported\n");
 			break;
 		case APPLE80211_CIPHER_PMKSA:
-			IOLog("Setting WPA PMKSA is not supported\n");
+			fProvider->setPMKSA(key->key, key->key_len);
 			break;
 	}
 	//fInterface->postMessage(APPLE80211_M_CIPHER_KEY_CHANGED);
@@ -313,7 +316,18 @@ void Black80211Control::postScanningDoneMessage(OSObject* self,  ...) {
 
 IOReturn Black80211Control::setSCAN_REQ_MULTIPLE(
 IO80211Interface *interface, struct apple80211_scan_multiple_data *sd) {
-	return kIOReturnUnsupported;
+	struct apple80211_scan_data s1d;
+	s1d.version = sd->version;
+	s1d.bss_type = APPLE80211_AP_MODE_ANY;
+	memset(s1d.bssid.octet, 0, ETHER_ADDR_LEN);
+	s1d.ssid_len = 0;
+	s1d.scan_type = sd->scan_type;
+	s1d.phy_mode = sd->phy_mode;
+	s1d.dwell_time = sd->dwell_time;
+	s1d.rest_time = sd->rest_time;
+	s1d.num_channels = MIN(APPLE80211_MAX_CHANNELS, sd->num_channels);
+	memcpy(s1d.channels, sd->channels, s1d.num_channels * sizeof(apple80211_channel));
+	return setSCAN_REQ(interface, &s1d);
 }
 
 
@@ -406,7 +420,7 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 		memcpy(result->asr_bssid, network->bssid, APPLE80211_ADDR_LEN);
 
 		result->asr_nrates = 1;
-		result->asr_rates[0] = 54;
+		result->asr_rates[0] = 300;
 
 		IOLog("SSID: %s, channel %d\n", network->essid, network->channel);
 		strncpy((char*)result->asr_ssid, (const char*)network->essid, APPLE80211_MAX_SSID_LEN);
@@ -417,9 +431,17 @@ IOReturn Black80211Control::getSCAN_RESULT(IO80211Interface *interface,
 			result->asr_ie_data = nullptr;
 		}
 		else {
+			/*
 			result->asr_ie_len = 2 + network->rsn_ie[1];
+			 */
+			result->asr_ie_len = network->ie_len;
 			result->asr_ie_data = IOMalloc(result->asr_ie_len);
 			memcpy(result->asr_ie_data, network->rsn_ie, result->asr_ie_len);
+			const char* s = hexdump((uint8_t*)result->asr_ie_data, result->asr_ie_len);
+			if (s) {
+				IOLog("RSN IE: %s\n", s);
+				IOFree((void*)s, 3 * result->asr_ie_len + 1);
+			}
 		}
 
 		*sr = result;
@@ -461,6 +483,9 @@ IOReturn Black80211Control::getCARD_CAPABILITIES(
 
 	cd->capabilities[0] = capabilities_value & 0xff;
 	cd->capabilities[1] = (capabilities_value >> 8) & 0xff;
+	
+	//Setting all bits enables AirDrop, Handoff, Auto Unlock. Of course, they don't work
+	//memset(cd->capabilities, 0xff, sizeof(cd->capabilities));
 
 	// Some bits of these two bytes enable multiple scanning requests. It's not what we currently want
 	//cd->capabilities[2] |= 0xC0;
@@ -474,9 +499,6 @@ IOReturn Black80211Control::getCARD_CAPABILITIES(
   /// IEEE80211_C_SCANALLBAND |    /* device scans all bands at once */
   /// IEEE80211_C_SHSLOT |    /* short slot time supported */
   /// IEEE80211_C_SHPREAMBLE;    /* short preamble supported */
-
-  //cd->capabilities[0] = 0xeb;
-  //cd->capabilities[1] = 0x7e;
 
   // cd->capabilities[5] |= 4;
 
@@ -512,12 +534,6 @@ IOReturn Black80211Control::getCARD_CAPABILITIES(
   cd->capabilities[6] |= 1;
   cd->capabilities[5] |= 0x80;
 
-  */
-
-  /*
-  cd->capabilities[0] = (caps & 0xff);
-  cd->capabilities[1] = (caps & 0xff00) >> 8;
-  cd->capabilities[2] = (caps & 0xff0000) >> 16;
   */
 
   return kIOReturnSuccess;
@@ -646,7 +662,8 @@ IOReturn Black80211Control::setPOWER(IO80211Interface *interface,
 
 IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
                                          struct apple80211_assoc_data *ad) {
-    IOLog("Black80211::setAssociate %s, auth type %x:%x\n", ad->ad_ssid, ad->ad_auth_upper, ad->ad_auth_lower);
+	uint8_t *b = ad->ad_bssid.octet;
+    IOLog("Black80211::setAssociate %s, bssid %02x:%02x:%02x:%02x:%02x:%02x auth type %x:%x\n", ad->ad_ssid, b[0], b[1], b[2], b[3], b[4], b[5], ad->ad_auth_upper, ad->ad_auth_lower);
 
 	setDISASSOCIATE(interface);
 
@@ -655,13 +672,13 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 	authtype_data.authtype_lower = ad->ad_auth_lower;
 	authtype_data.authtype_upper = ad->ad_auth_upper;
 	setAUTH_TYPE(interface, &authtype_data);
-
-//	apple80211_rsn_ie_data rsn_ie_data;
-//	rsn_ie_data.version = APPLE80211_VERSION;
-//	rsn_ie_data.len = ad->ad_rsn_ie_len;
-//	memcpy(rsn_ie_data.ie, ad->ad_rsn_ie, rsn_ie_data.len);
-//	setRSN_IE(interface, &rsn_ie_data);
-//	
+	
+	apple80211_rsn_ie_data rsn_ie_data;
+	rsn_ie_data.version = APPLE80211_VERSION;
+	rsn_ie_data.len = ad->ad_rsn_ie[1] + 2;
+	memcpy(rsn_ie_data.ie, ad->ad_rsn_ie, rsn_ie_data.len);
+	setRSN_IE(interface, &rsn_ie_data);
+	
 //	apple80211_ssid_data ssid_data;
 //	ssid_data.version = APPLE80211_VERSION;
 //	ssid_data.ssid_len = ad->ad_ssid_len;
@@ -669,7 +686,7 @@ IOReturn Black80211Control::setASSOCIATE(IO80211Interface *interface,
 //	setSSID(interface, &ssid_data);
 
 //	setCIPHER_KEY(interface, &ad->ad_key);
-	fProvider->associate(ad->ad_ssid, ad->ad_ssid_len, ad->ad_auth_lower, ad->ad_auth_upper, ad->ad_key.key, ad->ad_key.key_len, ad->ad_key.key_index);
+	fProvider->associate(ad->ad_ssid, ad->ad_ssid_len, ad->ad_bssid, ad->ad_auth_lower, ad->ad_auth_upper, ad->ad_key.key, ad->ad_key.key_len, ad->ad_key.key_index);
 
     fInterface->postMessage(APPLE80211_M_SSID_CHANGED);
     fInterface->setLinkState(IO80211LinkState::kIO80211NetworkLinkUp, 0);
@@ -796,11 +813,25 @@ IOReturn Black80211Control::getRSN_IE(IO80211Interface *interface,
                                                 struct apple80211_rsn_ie_data *rsn_ie_data) {
     rsn_ie_data->version = APPLE80211_VERSION;
 	fProvider->getRSNIE(rsn_ie_data->len, rsn_ie_data->ie);
+	const char *s = hexdump(rsn_ie_data->ie, rsn_ie_data->len);
+	if (s) {
+		IOLog("Black80211::getRSN_IE: %s\n", s);
+		IOFree((void*)s, 3 * rsn_ie_data->len + 1);
+	}
+	else {
+		IOLog("Black80211::getRSN_IE: empty\n");		
+	}
     return kIOReturnSuccess;
 }
 
 IOReturn Black80211Control::setRSN_IE(IO80211Interface *interface,
                                                 struct apple80211_rsn_ie_data *rsn_ie_data) {
+	const char *s = hexdump(rsn_ie_data->ie, rsn_ie_data->len);
+	if (s) {
+		IOLog("set RSN IE: %s\n", s);
+		IOFree((void*)s, 3 * rsn_ie_data->len + 1);
+	}
+	fProvider->setRSN_IE(rsn_ie_data->ie);
     return kIOReturnSuccess;
 }
 
@@ -810,6 +841,11 @@ IOReturn Black80211Control::setRSN_IE(IO80211Interface *interface,
 IOReturn Black80211Control::getAP_IE_LIST(IO80211Interface *interface,
                                                 struct apple80211_ap_ie_data *ap_ie_data) {
 	fProvider->getAP_IE_LIST(ap_ie_data->len, ap_ie_data->ie_data);
+	const char *s = hexdump(ap_ie_data->ie_data, ap_ie_data->len);
+	if (s) {
+		IOLog("IE list: %s\n", s);
+		IOFree((void*)s, 3 * ap_ie_data->len + 1);
+	}
     return kIOReturnSuccess;
 }
 
@@ -889,5 +925,31 @@ IOReturn Black80211Control::getLINK_CHANGED_EVENT_DATA(IO80211Interface *interfa
 		ed->reason = APPLE80211_LINK_DOWN_REASON_DEAUTH;
 	}
 	IOLog("Link down: %d, reason: %d\n", ed->isLinkDown, ed->reason);
+	return kIOReturnSuccess;
+}
+
+//
+// MARK: 254 - HW_SUPPORTED_CHANNELS
+//
+
+IOReturn Black80211Control::getHW_SUPPORTED_CHANNELS(IO80211Interface *interface,
+                                                  struct apple80211_sup_channel_data *ad) {
+	return getSUPPORTED_CHANNELS(interface, ad);
+}
+
+//
+// MARK: 353 - NSS
+//
+
+IOReturn Black80211Control::getNSS(IO80211Interface *interface,
+                                                  struct apple80211_nss_data *ad) {
+	if (ad == nullptr)
+		return 0x16;
+
+	if (fProvider->getState() < APPLE80211_S_AUTH)
+		return 6;
+
+	ad->version = APPLE80211_VERSION;	
+	ad->nss = 1;
 	return kIOReturnSuccess;
 }

@@ -341,7 +341,7 @@ struct apple80211req
 #define APPLE80211_IOC_OFFLOAD_TCPKA_ENABLE 265
 #define APPLE80211_IOC_RANGING_CAPS 266
 #define APPLE80211_IOC_PER_CORE_RSSI_REPORT 267
-#define APPLE80211_IOC_NSS
+#define APPLE80211_IOC_NSS 353
 
 #define APPLE80211_IOC_CARD_SPECIFIC            0xffffffff    // req_type
 
@@ -560,10 +560,12 @@ struct apple80211_assoc_data
     u_int8_t                ad_ssid[ APPLE80211_MAX_SSID_LEN ];
     struct ether_addr        ad_bssid;        // prefer over ssid if not zeroed
     struct apple80211_key    ad_key;
-    u_int16_t                ad_rsn_ie_len;
+	u_int8_t				unknown[82];
     u_int8_t                ad_rsn_ie[ APPLE80211_MAX_RSN_IE_LEN ];
     u_int32_t                ad_flags;        // apple80211_assoc_flags
 };
+
+static_assert(offsetof(apple80211_assoc_data, ad_rsn_ie) == 206, "offsetof(apple80211_assoc_data, ad_rsn_ie)");
 
 struct apple80211_deauth_data
 {
@@ -772,6 +774,12 @@ struct apple80211_40mhz_intolerant_data
 {
     u_int32_t    version;
     u_int32_t    enabled;    // bit enabled or not
+};
+
+struct apple80211_nss_data
+{
+	u_int32_t	version;
+	u_int32_t	nss;
 };
 
 #endif // _APPLE80211_IOCTL_H_

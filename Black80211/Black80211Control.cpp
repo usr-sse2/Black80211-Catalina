@@ -14,6 +14,8 @@ OSDefineMetaClassAndStructors(Black80211Control, IO80211Controller);
 #define super IO80211Controller
 
 bool Black80211Control::init(OSDictionary* parameters) {
+	IOCTL_NAMES[353] = "NSS";
+	
     IOLog("Black80211: Init\n");
     
     if (!super::init(parameters)) {
@@ -445,8 +447,14 @@ if (REQ_TYPE == SIOCSA80211) { \
 		case APPLE80211_IOC_LINK_CHANGED_EVENT_DATA: // 156
 			IOCTL_GET(request_type, LINK_CHANGED_EVENT_DATA, apple80211_link_changed_event_data);
 			break;
+		case APPLE80211_IOC_HW_SUPPORTED_CHANNELS: // 254
+			IOCTL_GET(request_type, HW_SUPPORTED_CHANNELS, apple80211_sup_channel_data);
+			break;
+		case APPLE80211_IOC_NSS: // 353
+			IOCTL_GET(request_type, NSS, apple80211_nss_data);
+			break;
         default:
-            IOLog("Black80211: unhandled ioctl %s %d\n", request_number >= 267 ? "" : IOCTL_NAMES[request_number], request_number);
+            IOLog("Black80211: unhandled ioctl %s %d\n", request_number > 353 ? "" : IOCTL_NAMES[request_number], request_number);
             break;
     }
 #undef IOCTL
@@ -496,20 +504,24 @@ IOReturn Black80211Control::getMaxPacketSize( UInt32* maxSize ) const {
 }
 
 IOReturn Black80211Control::setPromiscuousMode(IOEnetPromiscuousMode mode) {
+	IOLog("%s\n", __FUNCTION__);
     return kIOReturnSuccess;
 }
 
 IOReturn Black80211Control::setMulticastMode(IOEnetMulticastMode mode) {
+	IOLog("%s\n", __FUNCTION__);
     return kIOReturnSuccess;
 }
 
 IOReturn Black80211Control::setMulticastList(IOEthernetAddress* addr, UInt32 len) {
+	IOLog("%s\n", __FUNCTION__);
     return kIOReturnSuccess;
 }
 
 SInt32 Black80211Control::monitorModeSetEnabled(IO80211Interface* interface,
                                                 bool enabled,
                                                 UInt32 dlt) {
+	IOLog("%s\n", __FUNCTION__);
     return kIOReturnSuccess;
 }
 

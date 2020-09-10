@@ -9,7 +9,7 @@
 #ifndef debug_h
 #define debug_h
 
-const char* IOCTL_NAMES[] = {
+const char* IOCTL_NAMES[354] = {
      "UNKNOWN",
      "SSID",
      "AUTH_TYPE",
