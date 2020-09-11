@@ -34,7 +34,7 @@ enum {
     LINK_SPEED_80211A    = 54000000ul,        // 54 Mbps
     LINK_SPEED_80211B    = 11000000ul,        // 11 Mbps
     LINK_SPEED_80211G    = 54000000ul,        // 54 Mbps
-    LINK_SPEED_80211N    = 300000000ul,        // 300 Mbps (MCS index 15, 400ns GI, 40 MHz channel)
+    LINK_SPEED_80211N    = 300000000ul,       // 300 Mbps (MCS index 15, 400ns GI, 40 MHz channel)
 };
 
 enum IO80211CountryCodeOp
@@ -78,7 +78,6 @@ enum joinStatus
 
 class IO80211Controller;
 class IO80211Interface;
-class IO82110WorkLoop;
 class IO80211VirtualInterface;
 class IO80211ControllerMonitor;
 class CCLogPipe;
@@ -357,7 +356,7 @@ protected:
     CCLogPipe * _controlPathLogPipe;       // 0x180
     CCLogStream * _ioctlLogStream;        // 0x188
     CCLogStream *  _eventLogStream;      // 0x190
-    IO82110WorkLoop * _workLoop;       // 0x198
+    IO80211WorkLoop * _workLoop;       // 0x198
     IO80211Interface * _interface;     // 0x1a0
     IO80211VirtualInterface * _v_interface; // 0x1a8
     IO80211VirtualInterface (* _vir_interface)[4]; // 0x1b0

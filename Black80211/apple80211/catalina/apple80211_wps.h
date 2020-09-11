@@ -32,10 +32,10 @@
 #define WPS_VENDOR_ID_BYTES 0x00, 0x37, 0x2A
 #define WPS_VENDOR_TYPE        0x00000001
 
-#define WPS_OP_START        0x01
-#define WPS_OP_ACK            0x02
+#define WPS_OP_START           0x01
+#define WPS_OP_ACK             0x02
 #define WPS_OP_NACK            0x03
-#define WPS_OP_MSG            0x04
+#define WPS_OP_MSG             0x04
 #define WPS_OP_DONE            0x05
 
 #define WPS_FLAG_MF            0x01    /* more fragments */
@@ -511,21 +511,21 @@ typedef enum WPSSupplicantState WPSSupplicantState;
 // Apple specific error codes
 
 #define WPSE_NOERR                 0        // no error
-#define WPSE_ERR                -1        // general error code
-#define    WPSE_PROTO_ERR            -2        // Problem with EAPOL handshake
-#define    WPSE_IE_NOT_PRESENT        -3        // No WPS IE present in IE list for ssid
-#define    WPSE_IE_MALFORMED        -4        // WPS IS missing required (for Apple) fields
-#define    WPSE_SCAN_ERR            -5        // Scan failed
-#define    WPSE_NO_PIN_AT_REG        -6        // No PIN configured at registrar
-#define WPSE_NO_PIN_AT_CLIENT    -7        // No PIN configured at client
-#define    WPSE_SSID_NOT_FOUND        -8        // Scan did not find SSID
-#define    WPSE_UNSUPPORTED_PW_ID    -9        // Registrar reports that it is using an unsupported PW ID
-#define    WPSE_ASSOC_FAILED        -10        // Association attempt failed
-#define WPSE_API_REQ            -11        // An apple80211 ioctl request failed
-#define WPSE_NOMEM                -12        // memory error
-#define WPSE_WPA_RSN_NOT_SUP    -13        // WPA/RSN not supported
-#define WPSE_TIMEOUT            -14        // EAPOL timed out
-#define WPSE_NACKED                -15        // NACKED by registrar
+#define WPSE_ERR                  -1        // general error code
+#define WPSE_PROTO_ERR            -2        // Problem with EAPOL handshake
+#define WPSE_IE_NOT_PRESENT       -3        // No WPS IE present in IE list for ssid
+#define WPSE_IE_MALFORMED         -4        // WPS IS missing required (for Apple) fields
+#define WPSE_SCAN_ERR             -5        // Scan failed
+#define WPSE_NO_PIN_AT_REG        -6        // No PIN configured at registrar
+#define WPSE_NO_PIN_AT_CLIENT     -7        // No PIN configured at client
+#define WPSE_SSID_NOT_FOUND       -8        // Scan did not find SSID
+#define WPSE_UNSUPPORTED_PW_ID    -9        // Registrar reports that it is using an unsupported PW ID
+#define WPSE_ASSOC_FAILED        -10        // Association attempt failed
+#define WPSE_API_REQ             -11        // An apple80211 ioctl request failed
+#define WPSE_NOMEM               -12        // memory error
+#define WPSE_WPA_RSN_NOT_SUP     -13        // WPA/RSN not supported
+#define WPSE_TIMEOUT             -14        // EAPOL timed out
+#define WPSE_NACKED              -15        // NACKED by registrar
 #define WPSE_FAIL                -16        // unexpected EAP-FAIL received
 
 #endif /* WPS_EAP_H */
