@@ -41,6 +41,6 @@ sudo kextutil Black80211.kext
 ```
 
 ### How to load on boot:
-- *(Recommended)* the kexts can be injected with this OpenCore 0.6.1 or later with SecureBoot enabled. When SecureBoot is enabled, it loads the `immutablekernel` which always contains IO80211Family.kext;
+- *(Recommended)* the kexts can be injected with this OpenCore 0.6.1. **[SecureBoot](https://dortania.github.io/OpenCore-Post-Install/universal/security/applesecureboot.html) should be enabled** to load the `immutablekernel` which always contains IO80211Family.kext;
 - *(Not recommended)* the kexts can be installed to `/Library/Extensions` with System Integrity Protection disabled;
 - only in the installer or Recovery the kexts can be injected with regular OpenCore or Clover, because macOS excludes IO80211Family from the `prelinkedkernel` when there are no wireless devices with drivers in system locations.
