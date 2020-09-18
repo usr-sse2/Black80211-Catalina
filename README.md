@@ -16,20 +16,19 @@ The following actions already work:
 
 ![maps](Maps.png)
 
-- Connecting to Open, WEP Open System and WPA2 Personal networks using entered password
+- Connecting to Open, WEP Open System, WPA2 Personal and WPA2 Enterprise networks
 
 The following authentication types are not supported:
 - WEP Shared Key
 - WPA3
 - OWE
-- All kinds of WPA Enterprise
 
 The following has not been tested:
-- WPA Personal (not WPA2)
+- First-generation WPA Personal and WPA Enterprise
 
 itlwm should be used from https://github.com/usr-sse2/itlwm
 
-Only macOS Catalina is supported.
+macOS Catalina and Big Sur are supported.
 
 ### How to load manually:
 put Black80211.kext and itlwm.kext in the same folder
