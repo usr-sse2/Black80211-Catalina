@@ -1,3 +1,5 @@
+Archived: now the development is continued directly in https://github.com/OpenIntelWireless/itlwm
+
 This project joins https://github.com/AppleIntelWifi/Black80211-Catalina and https://github.com/OpenIntelWireless/itlwm to provide a wireless driver for Intel adapters that can be controlled using native ![AirPort](NetworkMenuIcon.png) menu item.
 
 ![menu](NetworkMenu.png) 
