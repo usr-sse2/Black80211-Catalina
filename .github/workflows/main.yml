@@ -1,0 +1,80 @@
+name: CD
+
+on:
+  push:
+    branches: master
+
+env:
+  BUILD_OUTPUT_CATALINA: 'build/Build/Products/Debug/Catalina'
+  BUILD_OUTPUT_BIG_SUR: 'build/Build/Products/Debug/Big Sur'
+
+jobs:
+
+  build:
+    
+    runs-on: macos-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: '5'
+
+    - name: Manage Version
+      run: |
+        git fetch --prune --unshallow --tags
+        GIT_SHA="$(git rev-parse --short HEAD)"
+        CUR_TAG="$(git tag -l | grep 'alpha\|beta' | tail -1)"
+        sed -i '' -e "s/CURRENT_PROJECT_VERSION =.*/CURRENT_PROJECT_VERSION = ${GIT_SHA};/g" Black80211.xcodeproj/project.pbxproj
+        eval $(grep -m 1 "MARKETING_VERSION =" Black80211.xcodeproj/project.pbxproj | tr -d ';' | tr -d '\t' | tr -d " ")
+        echo "::set-env name=SHORT_SHA::$GIT_SHA"
+        echo "::set-env name=BLACK80211_VER::$MARKETING_VERSION"
+        if [[ -z $CUR_TAG ]]; then
+          echo "::set-env name=OLD_PRE_TAG::NULL"
+        else
+          echo "::set-env name=OLD_PRE_TAG::$CUR_TAG"
+        fi
+
+    - name: Generate Prerelease Release Notes
+      run: |
+        echo '### Disclaimer:' >> ReleaseNotes.md
+        echo '***This alpha version is for testing only.***' >> ReleaseNotes.md
+        echo 'It is not ready for daily use and we do not guarantee its usability.' >> ReleaseNotes.md
+        echo '### The latest five updates are:' >> ReleaseNotes.md
+        git log -"5" --format="- %H %s" | sed '/^$/d' >> ReleaseNotes.md
+
+    - name: Build Black80211 (Catalina)
+      run: |
+        xcodebuild -scheme Catalina -configuration Debug -sdk macosx10.15 -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | xcpretty && exit ${PIPESTATUS[0]}
+
+    - name: Pack Artifacts (Catalina)
+      run: |
+        cd "$BUILD_OUTPUT_CATALINA"
+        zip -r Black80211-v${BLACK80211_VER}-Catalina-DEBUG-alpha-${SHORT_SHA}.zip Black80211.kext
+        cd -
+
+    - name: Build Black80211 (Big Sur)
+      run: |
+        xcodebuild -scheme 'Big Sur' -configuration Debug -sdk macosx10.15 -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | xcpretty && exit ${PIPESTATUS[0]}
+
+    - name: Pack Artifacts (Big Sur)
+      run: |
+        cd "$BUILD_OUTPUT_BIG_SUR"
+        zip -r Black80211-v${BLACK80211_VER}-Big-Sur-DEBUG-alpha-${SHORT_SHA}.zip Black80211.kext
+        cd -
+
+    - name: Delete Old Prerelease
+      uses: dev-drprasad/delete-tag-and-release@v0.1.2
+      with:
+        tag_name: ${{ env.OLD_PRE_TAG }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish GitHub Release
+      uses: ncipollo/release-action@v1
+      with:
+        prerelease: true
+        bodyFile: ReleaseNotes.md
+        artifacts: "${{ env.BUILD_OUTPUT_CATALINA }}/*.zip,${{ env.BUILD_OUTPUT_BIG_SUR }}/*.zip"
+        tag: "v${{ env.BLACK80211_VER }}-alpha"
+        token: ${{ secrets.GITHUB_TOKEN }}
